@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chaos System d20 - Scheda Personaggio</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="sheet">
+    <h1>Chaos System d20</h1>
+    <form id="characterForm">
+      <div class="avatar-block">
+        <img id="avatarPreview" src="" alt="Avatar" />
+        <input type="file" id="avatarUpload" accept="image/*" onchange="loadAvatar(event)" />
+      </div>
+      <label>Nome: <input type="text" id="name" /></label>
+      <label>Razza: <input type="text" id="race" /></label>
+      <label>Classe: <input type="text" id="class" /></label>
+      <label>Fazione: <input type="text" id="faction" /></label>
+      <label>Rank: <input type="text" id="rank" /></label>
+      <label>Costituzione: <input type="number" id="costituzione" /></label>
+      <div class="stats">
+        <p>Vita: <span id="vitaOut">0</span></p>
+        <p>Mana: <span id="manaOut">0</span></p>
+        <p>Scudo: <span id="scudoOut">0</span></p>
+      </div>
+      <button type="button" onclick="calcolaScheda()">Calcola</button>
+      <button type="button" onclick="exportToJSON()">Esporta JSON</button>
+      <button type="button" onclick="exportToPDF()">Esporta PDF</button>
+      <button type="button" onclick="resetForm()">Reset</button>
+      <label>Importa JSON:<input type="file" accept="application/json" onchange="importFromJSON(event)" /></label>
+    </form>
+    <h2>Chat</h2>
+    <div id="chatbox"></div>
+    <input type="text" id="chatInput" placeholder="Scrivi un messaggio..." />
+    <button onclick="sendMessage()">Invia</button>
+  </div>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
