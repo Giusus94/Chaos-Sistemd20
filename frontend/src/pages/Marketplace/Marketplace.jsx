@@ -1,0 +1,1 @@
+const Marketplace = () => <h2>Marketplace</h2>; export default Marketplace;

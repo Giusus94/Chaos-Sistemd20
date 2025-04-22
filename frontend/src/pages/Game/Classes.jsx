@@ -1,0 +1,1 @@
+const Classes = () => <h2>Classes Page</h2>; export default Classes;
