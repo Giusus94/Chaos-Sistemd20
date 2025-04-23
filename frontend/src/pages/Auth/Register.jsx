@@ -10,6 +10,7 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    console.log('Tentativo di registrazione con:', email, password);
 
     try {
       const res = await fetch('https://chaos-sistemd20.onrender.com/api/register', {
@@ -19,14 +20,15 @@ const Register = () => {
       });
 
       const data = await res.json();
+      console.log('Risposta dal backend:', data);
 
       if (res.ok) {
-        // (opzionale) salva token: localStorage.setItem('token', data.token);
-        navigate('/login'); // o direttamente /profile se preferisci
+        navigate('/login');
       } else {
         setError(data.message || 'Registrazione fallita');
       }
     } catch (err) {
+      console.error('Errore di rete:', err);
       setError('Errore di rete o server non raggiungibile');
     }
   };
@@ -34,7 +36,7 @@ const Register = () => {
   return (
     <div>
       <h2>Registrati</h2>
-      {error && <p style={{color: 'red'}}>{error}</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleRegister}>
         <input
           type="email"
@@ -54,9 +56,6 @@ const Register = () => {
         <br />
         <button type="submit">Crea Account</button>
       </form>
-      <p>Hai già un account? <a href="/login">Accedi qui</a></p>
-      <p>Non hai un account? <a href="/register">Registrati</a></p>
-
     </div>
   );
 };
