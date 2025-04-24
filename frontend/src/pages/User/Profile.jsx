@@ -1,28 +1,39 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
+  const navigate = useNavigate();
   const [message, setMessage] = useState('');
-
+  
   useEffect(() => {
     const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
 
     fetch('https://chaos-sistemd20.onrender.com/api/profilo', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` }
     })
-      .then((res) => res.json())
-      .then((data) => {
-        setMessage(data.message || 'Benvenuto nel tuo profilo!');
+      .then(res => res.json())
+      .then(data => {
+        setMessage(data.message);
       })
       .catch(() => {
-        setMessage('Errore nel caricamento del profilo.');
+        navigate('/login');
       });
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
+
   return (
     <div>
-      <h2>{message}</h2>
+      <h2>Benvenuto nel tuo profilo!</h2>
+      <p>{message}</p>
+      <button onClick={handleLogout}>Logout</button>
     </div>
   );
 };

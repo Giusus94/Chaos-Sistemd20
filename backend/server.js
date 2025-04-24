@@ -19,7 +19,21 @@ app.get('/', (req, res) => {
 
 // --- REGISTRAZIONE ---
 app.post('/api/register', async (req, res) => {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
+  const validator = require('validator');
+  
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Tutti i campi sono obbligatori' });
+  }
+  
+  if (!validator.isEmail(email)) {
+    return res.status(400).json({ message: 'Email non valida' });
+  }
+  
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'La password deve contenere almeno tra 6 e 16 caratteri' });
+  }
+  
   
     try {
       const existing = await User.findOne({ email });
@@ -43,6 +57,7 @@ app.post('/api/register', async (req, res) => {
     try {
       const user = await User.findOne({ email });
       const isValid = await bcrypt.compare(password, user.password);
+
 if (!user || !isValid) {
   return res.status(401).json({ message: 'Credenziali non valide' });
 }

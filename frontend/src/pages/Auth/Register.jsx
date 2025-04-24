@@ -9,6 +9,11 @@ const Register = () => {
   const [error, setError] = useState('');
 
   const handleRegister = async (e) => {
+    if (password.length < 6 || password.length > 16) {
+      setError('La password deve contenere tra 6 e 16 caratteri');
+      return;
+    }
+    
     e.preventDefault();
     console.log('Tentativo di registrazione con:', email, password);
 
