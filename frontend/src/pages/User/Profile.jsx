@@ -1,29 +1,26 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { isLoggedIn, getToken, removeToken } from '../../utils/auth';
+import React, { useEffect, useState } from 'react';
 
 const Profile = () => {
-  const navigate = useNavigate();
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
-    if (!isLoggedIn()) {
-      navigate('/login'); // se non loggato → redireziona
-    }
-  }, [navigate]);
+    const token = localStorage.getItem('token');
 
-  const handleLogout = () => {
-    removeToken();
-    navigate('/login');
-  };
+    fetch('https://chaos-sistemd20.onrender.com/api/profilo', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    })
+      .then(res => res.json())
+      .then(data => setMessage(data.message))
+      .catch(() => setMessage('Accesso non autorizzato.'));
+  }, []);
 
   return (
     <div>
-      <h2>Benvenuto nel tuo profilo!</h2>
-      <p>Il tuo token è:</p>
-      <code>{getToken()}</code>
-
-      <br />
-      <button onClick={handleLogout}>Logout</button>
+      <h2>👤 Profilo</h2>
+      <p>{message}</p>
     </div>
   );
 };
