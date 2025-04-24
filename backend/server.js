@@ -4,6 +4,7 @@ const User = require('./models/User');
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -47,12 +48,24 @@ if (!user || !isValid) {
 }
 
   
-      res.status(200).json({ token: 'accesso-ok', email: user.email });
+const token = jwt.sign(
+  { userId: user._id, email: user.email },
+  process.env.JWT_SECRET,
+  { expiresIn: '1h' }
+);
+
+res.status(200).json({ token });
+
     } catch (err) {
       res.status(500).json({ message: 'Errore interno', error: err.message });
     }
   });
-  
+  const verifyToken = require('./middleware/auth');
+
+app.get('/api/profilo', verifyToken, (req, res) => {
+  res.json({ message: `Benvenuto ${req.user.email}` });
+});
+
 connectDB();
 
 app.listen(PORT, () => {
