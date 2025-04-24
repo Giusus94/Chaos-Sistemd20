@@ -62,9 +62,10 @@ res.status(200).json({ token });
   });
   const verifyToken = require('./middleware/auth');
 
-app.get('/api/profilo', verifyToken, (req, res) => {
-  res.json({ message: `Benvenuto ${req.user.email}` });
-});
+  app.get('/api/profilo', verifyToken, (req, res) => {
+    res.json({ message: 'Benvenuto nel tuo profilo!' });
+  });
+  
 
 connectDB();
 
