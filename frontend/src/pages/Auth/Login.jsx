@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { checkAuth } from './utils/auth';
+import { checkAuth } from '../../utils/auth';
+
 
 const App = () => {
   const navigate = useNavigate();
