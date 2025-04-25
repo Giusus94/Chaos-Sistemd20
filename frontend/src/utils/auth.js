@@ -1,8 +1,10 @@
-// utils/auth.js
-
 export const isLoggedIn = () => {
-  const token = localStorage.getItem('token');
-  return !!token;
+  return !!localStorage.getItem('token');
+};
+
+export const removeToken = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('email');
 };
 
 export const checkAuth = async () => {
@@ -11,16 +13,13 @@ export const checkAuth = async () => {
 
   try {
     const res = await fetch('https://chaos-sistemd20.onrender.com/api/profilo', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     if (!res.ok) throw new Error();
     return true;
   } catch (err) {
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
+    removeToken();
     return false;
   }
 };
