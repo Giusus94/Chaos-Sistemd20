@@ -4,9 +4,13 @@ import Navbar from './components/Navbar';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import Profile from './pages/User/Profile';
+import { AuthProvider } from './context/AuthContext';
+
+
 
 function App() {
   return (
+    <AuthProvider>
     <Router>
       <Navbar />
       <Routes>
@@ -17,6 +21,7 @@ function App() {
         <Route path="*" element={<div>Pagina non trovata</div>} />
       </Routes>
     </Router>
+    </AuthProvider>
   );
 }
 

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext'; // Adjust the path as needed
 import { useNavigate } from 'react-router-dom';
-
+import { checkAuth } from '../../utils/auth';
 const Profile = () => {
   const navigate = useNavigate();
   const [message, setMessage] = useState('');
@@ -23,17 +24,15 @@ const Profile = () => {
         navigate('/login');
       });
   }, []);
-
   const handleLogout = () => {
-
-    const { token, email, logout } = useContext(AuthContext);
+    const { logout } = useContext(AuthContext);
+    logout();
     alert('Logout effettuato con successo.');
     navigate('/login'); // ritorna alla login
   };
-  
   return (
     <div>
-     <h2>Benvenuto nel tuo profilo!</h2>
+     <p>Sei autenticato come: <strong>{useContext(AuthContext).email}</strong></p>
      <p>Sei autenticato come: <strong>{email}</strong></p>
 
 
