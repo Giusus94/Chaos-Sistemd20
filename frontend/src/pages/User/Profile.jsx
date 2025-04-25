@@ -25,8 +25,8 @@ const Profile = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
+
+    const { token, email, logout } = useContext(AuthContext);
     alert('Logout effettuato con successo.');
     navigate('/login'); // ritorna alla login
   };
@@ -34,9 +34,11 @@ const Profile = () => {
   return (
     <div>
      <h2>Benvenuto nel tuo profilo!</h2>
-<p>Sei autenticato come: <strong>{localStorage.getItem('email')}</strong></p>
+     <p>Sei autenticato come: <strong>{email}</strong></p>
 
-      <button onClick={handleLogout}>Logout</button>
+
+     <button onClick={logout}>Logout</button>
+
     </div>
   );
 };
