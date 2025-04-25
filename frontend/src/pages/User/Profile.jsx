@@ -26,13 +26,16 @@ const Profile = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    navigate('/login');
+    localStorage.removeItem('email');
+    alert('Logout effettuato con successo.');
+    navigate('/login'); // ritorna alla login
   };
-
+  
   return (
     <div>
-      <h2>Benvenuto nel tuo profilo!</h2>
-      <p>{message}</p>
+     <h2>Benvenuto nel tuo profilo!</h2>
+<p>Sei autenticato come: <strong>{localStorage.getItem('email')}</strong></p>
+
       <button onClick={handleLogout}>Logout</button>
     </div>
   );
