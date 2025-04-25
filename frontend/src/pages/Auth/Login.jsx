@@ -55,8 +55,8 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <h2>Login</h2>
+    <div style={{ maxWidth: '400px', margin: '60px auto', textAlign: 'center' }}>
+    <h2>Login</h2>
       {error && <p style={{color: 'red'}}>{error}</p>}
       <form onSubmit={handleSubmit}>
         <input type="email" placeholder="Email" value={email}
