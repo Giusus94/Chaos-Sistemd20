@@ -5,15 +5,41 @@ import { toast } from 'react-toastify';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { token, nickname, avatar, setNickname, setAvatar, logout } = useContext(AuthContext);
+  const { token, nickname, setNickname, avatar, setAvatar, logout } = useContext(AuthContext);
 
   const [newNickname, setNewNicknameInput] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
-    if (!token) {
-      navigate('/login');
-    }
+    const fetchProfile = async () => {
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      try {
+        const res = await fetch('https://chaos-sistemd20.onrender.com/api/profile', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          console.log('Dati profilo ricevuti:', data);
+          // opzionale: potresti voler aggiornare nickname/avatar qui se vuoi
+        } else {
+          navigate('/login');
+        }
+      } catch (err) {
+        console.error('Errore di rete', err);
+        navigate('/login');
+      }
+    };
+
+    fetchProfile();
   }, [token, navigate]);
 
   const handleNicknameChange = async () => {
@@ -34,15 +60,16 @@ const Profile = () => {
         body: JSON.stringify({ nickname: newNickname, avatar: newAvatarUrl })
       });
 
-      const data = await res.json();
-
       if (res.ok) {
         setNickname(newNickname);
         setAvatar(newAvatarUrl);
+        localStorage.setItem('nickname', newNickname);
+        localStorage.setItem('avatar', newAvatarUrl);
         toast.success('Nickname e avatar aggiornati!');
         setNewNicknameInput('');
       } else {
-        toast.error(data.message || 'Errore aggiornamento nickname');
+        const errorData = await res.json();
+        toast.error(errorData.message || 'Errore durante aggiornamento');
       }
     } catch (err) {
       toast.error('Errore di rete');
@@ -63,13 +90,13 @@ const Profile = () => {
         body: JSON.stringify({ nickname, avatar: newAvatarUrl })
       });
 
-      const data = await res.json();
-
       if (res.ok) {
         setAvatar(newAvatarUrl);
+        localStorage.setItem('avatar', newAvatarUrl);
         toast.success('Nuovo avatar generato!');
       } else {
-        toast.error(data.message || 'Errore aggiornamento avatar');
+        const errorData = await res.json();
+        toast.error(errorData.message || 'Errore durante aggiornamento');
       }
     } catch (err) {
       toast.error('Errore di rete');
@@ -102,13 +129,19 @@ const Profile = () => {
 
       if (res.ok) {
         setAvatar(data.avatar);
+        localStorage.setItem('avatar', data.avatar);
         toast.success('Avatar personale caricato!');
       } else {
-        toast.error(data.message || 'Errore upload avatar');
+        toast.error(data.message || 'Errore durante upload avatar');
       }
     } catch (err) {
       toast.error('Errore di rete');
     }
+  };
+  
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -118,38 +151,37 @@ const Profile = () => {
       <img
         src={avatar}
         alt="Avatar"
-        style={{ width: '100px', height: '100px', borderRadius: '50%', marginBottom: '20px' }}
+        style={{ width: '120px', height: '120px', borderRadius: '50%', marginBottom: '20px', border: '2px solid #00f0ff' }}
       />
-      <h2>{nickname}</h2>
+      <h2 style={{ color: '#00f0ff' }}>{nickname}</h2>
 
-      <div style={{ marginTop: '20px' }}>
+      <div style={{ marginTop: '30px' }}>
         <input
           type="text"
           placeholder="Nuovo Nickname"
           value={newNickname}
           onChange={(e) => setNewNicknameInput(e.target.value)}
-          style={{ padding: '8px', width: '200px' }}
+          style={{ padding: '8px', width: '250px', borderRadius: '8px' }}
         />
         <br /><br />
-        <button onClick={handleNicknameChange} style={{ marginRight: '10px' }}>
+        <button onClick={handleNicknameChange} style={{ marginRight: '10px', padding: '10px 20px' }}>
           Aggiorna Nickname + Avatar
         </button>
-        <button onClick={handleGenerateNewAvatar}>
+        <button onClick={handleGenerateNewAvatar} style={{ padding: '10px 20px' }}>
           Solo Nuovo Avatar
         </button>
         <br /><br />
 
-        {/* Upload Avatar Personalizzato */}
         <input type="file" accept="image/*" onChange={handleFileChange} />
         <br />
-        <button onClick={handleUploadAvatar}>Carica Avatar Personale</button>
-
+        <button onClick={handleUploadAvatar} style={{ marginTop: '10px', padding: '10px 20px' }}>
+          Carica Avatar Personale
+        </button>
+        <br /><br />
+        <button onClick={handleLogout} style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: '#dc3545', color: 'white', border: 'none' }}>
+          Logout
+        </button>
       </div>
-
-      <br /><br />
-      <button onClick={logout} style={{ backgroundColor: 'red', color: 'white', padding: '8px 20px', borderRadius: '5px' }}>
-        Logout
-      </button>
     </div>
   );
 };
