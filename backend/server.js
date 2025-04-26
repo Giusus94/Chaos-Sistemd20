@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware base
 const corsOptions = {
-  origin: ['https://chaos-sistemd20.vercel.app', 'https://chaos-sistemd20-mwmwct4jk-giuseppes-projects-282f0567.vercel.app/'], // metti qui anche il dominio temporaneo di Vercel
+  origin: ['https://chaos-sistemd20.vercel.app', 'https://chaos-sistemd20-mwmwct4jk-giuseppes-projects-282f0567.vercel.app'], // metti qui anche il dominio temporaneo di Vercel
   credentials: true,
 };
 app.use(cors(corsOptions));
