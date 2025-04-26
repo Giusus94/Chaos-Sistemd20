@@ -12,7 +12,11 @@ const Navbar = () => {
 
   return (
     <nav style={{ padding: '10px', background: '#222', color: 'white' }}>
-      <h2 style={{ display: 'inline', marginRight: '20px' }}>Chaos System</h2>
+        <img 
+        src="/assets/logo-chaos.svg" 
+        alt="Chaos System Arkadia2099 Logo" 
+        style={{ width: '300px', height: '60px', margin: '20px auto', display: 'block' }} 
+      />
       <Link to="/">Home</Link>{" "}
       {isLoggedIn() ? (
         <>
