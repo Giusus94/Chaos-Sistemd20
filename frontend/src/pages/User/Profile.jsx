@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [nickname, setNickname] = useState(localStorage.getItem('nickname') || '');
-  const [avatar, setAvatar] = useState(localStorage.getItem('avatar') || '');
+  const { nickname, avatar, updateProfile } = useContext(AuthContext);
   const [newNickname, setNewNickname] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -16,7 +16,6 @@ const Profile = () => {
     }
   }, [navigate]);
 
-  // ✅ Cambia nickname e rigenera avatar legato
   const handleNicknameChange = async () => {
     if (newNickname.trim().length < 3) {
       toast.error('Il nickname deve avere almeno 3 caratteri.');
@@ -41,11 +40,9 @@ const Profile = () => {
       });
 
       if (res.ok) {
-        setNickname(newNickname);
-        setAvatar(newAvatarUrl);
-        localStorage.setItem('nickname', newNickname);
-        localStorage.setItem('avatar', newAvatarUrl);
+        updateProfile(newNickname, newAvatarUrl);
         toast.success('Nickname e avatar aggiornati con successo!');
+        setNewNickname('');
       } else {
         const errorData = await res.json();
         toast.error(errorData.message || 'Errore durante l\'aggiornamento');
@@ -55,7 +52,6 @@ const Profile = () => {
     }
   };
 
-  // ✅ Genera solo un nuovo avatar casuale
   const handleGenerateNewAvatar = async () => {
     const randomSeed = Math.random().toString(36).substring(2, 10);
     const newAvatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${randomSeed}`;
@@ -70,14 +66,13 @@ const Profile = () => {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          nickname, // Mantieni il nickname attuale
+          nickname,
           avatar: newAvatarUrl
         })
       });
 
       if (res.ok) {
-        setAvatar(newAvatarUrl);
-        localStorage.setItem('avatar', newAvatarUrl);
+        updateProfile(nickname, newAvatarUrl);
         toast.success('Nuovo avatar generato e salvato!');
       } else {
         const errorData = await res.json();
@@ -88,7 +83,6 @@ const Profile = () => {
     }
   };
 
-  // ✅ Gestione caricamento file immagine personalizzata
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
   };
@@ -116,11 +110,10 @@ const Profile = () => {
       const data = await res.json();
 
       if (res.ok) {
-        setAvatar(data.avatar);
-        localStorage.setItem('avatar', data.avatar);
+        updateProfile(nickname, data.avatar);
         toast.success('Avatar personale caricato con successo!');
       } else {
-        toast.error(data.message || 'Errore durante l\'upload avatar');
+        toast.error(data.message || 'Errore durante upload');
       }
     } catch (err) {
       toast.error('Errore di rete');
