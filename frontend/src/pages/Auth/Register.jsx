@@ -1,58 +1,76 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const Register = () => {
   const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
-  const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
+  const [nickname, setNickname] = useState('');
   const [error, setError] = useState('');
 
-  const handleRegister = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (password.length < 6 || password.length > 16) {
-      setError('La password deve contenere tra 6 e 16 caratteri');
-      return;
-    }
-
-    // Genera avatar automaticamente
-    const avatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}`;
+    // Se non viene inserito un avatar personalizzato, genera uno random
+    const randomAvatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}`;
 
     try {
       const res = await fetch('https://chaos-sistemd20.onrender.com/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, nickname, avatar: avatarUrl })
+        body: JSON.stringify({ email, password, nickname, avatar: randomAvatar })
       });
 
       const data = await res.json();
 
       if (res.ok) {
+        toast.success('Registrazione completata! Ora effettua il login.');
         navigate('/login');
       } else {
         setError(data.message || 'Registrazione fallita');
+        toast.error(data.message || 'Registrazione fallita');
       }
     } catch (err) {
       setError('Errore di rete o server non raggiungibile');
+      toast.error('Errore di rete o server non raggiungibile');
     }
   };
 
   return (
     <div style={{ maxWidth: '400px', margin: '60px auto', textAlign: 'center' }}>
-      <h2>Registrati</h2>
+      <h2>Registrazione</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleRegister}>
-        <input type="email" placeholder="Email" value={email}
-          onChange={(e) => setEmail(e.target.value)} required />
+      <form onSubmit={handleSubmit}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          style={{ marginBottom: '10px', padding: '8px', width: '100%' }}
+        />
         <br />
-        <input type="text" placeholder="Nickname" value={nickname}
-          onChange={(e) => setNickname(e.target.value)} required />
+        <input
+          type="password"
+          placeholder="Password (6-16 caratteri)"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          style={{ marginBottom: '10px', padding: '8px', width: '100%' }}
+        />
         <br />
-        <input type="password" placeholder="Password" value={password}
-          onChange={(e) => setPassword(e.target.value)} required />
+        <input
+          type="text"
+          placeholder="Nickname"
+          value={nickname}
+          onChange={(e) => setNickname(e.target.value)}
+          required
+          style={{ marginBottom: '10px', padding: '8px', width: '100%' }}
+        />
         <br />
-        <button type="submit">Crea Account</button>
+        <button type="submit" style={{ padding: '8px 20px' }}>Registrati</button>
       </form>
     </div>
   );

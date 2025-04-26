@@ -5,16 +5,16 @@ import { toast } from 'react-toastify';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { nickname, avatar, updateProfile } = useContext(AuthContext);
-  const [newNickname, setNewNickname] = useState('');
+  const { token, nickname, avatar, setNickname, setAvatar, logout } = useContext(AuthContext);
+
+  const [newNickname, setNewNicknameInput] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
     }
-  }, [navigate]);
+  }, [token, navigate]);
 
   const handleNicknameChange = async () => {
     if (newNickname.trim().length < 3) {
@@ -25,27 +25,24 @@ const Profile = () => {
     const newAvatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${newNickname}`;
 
     try {
-      const token = localStorage.getItem('token');
-
       const res = await fetch('https://chaos-sistemd20.onrender.com/api/profile', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          nickname: newNickname,
-          avatar: newAvatarUrl
-        })
+        body: JSON.stringify({ nickname: newNickname, avatar: newAvatarUrl })
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        updateProfile(newNickname, newAvatarUrl);
-        toast.success('Nickname e avatar aggiornati con successo!');
-        setNewNickname('');
+        setNickname(newNickname);
+        setAvatar(newAvatarUrl);
+        toast.success('Nickname e avatar aggiornati!');
+        setNewNicknameInput('');
       } else {
-        const errorData = await res.json();
-        toast.error(errorData.message || 'Errore durante l\'aggiornamento');
+        toast.error(data.message || 'Errore aggiornamento nickname');
       }
     } catch (err) {
       toast.error('Errore di rete');
@@ -57,26 +54,22 @@ const Profile = () => {
     const newAvatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${randomSeed}`;
 
     try {
-      const token = localStorage.getItem('token');
-
       const res = await fetch('https://chaos-sistemd20.onrender.com/api/profile', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          nickname,
-          avatar: newAvatarUrl
-        })
+        body: JSON.stringify({ nickname, avatar: newAvatarUrl })
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        updateProfile(nickname, newAvatarUrl);
-        toast.success('Nuovo avatar generato e salvato!');
+        setAvatar(newAvatarUrl);
+        toast.success('Nuovo avatar generato!');
       } else {
-        const errorData = await res.json();
-        toast.error(errorData.message || 'Errore durante aggiornamento avatar');
+        toast.error(data.message || 'Errore aggiornamento avatar');
       }
     } catch (err) {
       toast.error('Errore di rete');
@@ -97,8 +90,6 @@ const Profile = () => {
     formData.append('avatar', selectedFile);
 
     try {
-      const token = localStorage.getItem('token');
-
       const res = await fetch('https://chaos-sistemd20.onrender.com/api/profile/avatar', {
         method: 'POST',
         headers: {
@@ -110,10 +101,10 @@ const Profile = () => {
       const data = await res.json();
 
       if (res.ok) {
-        updateProfile(nickname, data.avatar);
-        toast.success('Avatar personale caricato con successo!');
+        setAvatar(data.avatar);
+        toast.success('Avatar personale caricato!');
       } else {
-        toast.error(data.message || 'Errore durante upload');
+        toast.error(data.message || 'Errore upload avatar');
       }
     } catch (err) {
       toast.error('Errore di rete');
@@ -136,7 +127,7 @@ const Profile = () => {
           type="text"
           placeholder="Nuovo Nickname"
           value={newNickname}
-          onChange={(e) => setNewNickname(e.target.value)}
+          onChange={(e) => setNewNicknameInput(e.target.value)}
           style={{ padding: '8px', width: '200px' }}
         />
         <br /><br />
@@ -152,7 +143,13 @@ const Profile = () => {
         <input type="file" accept="image/*" onChange={handleFileChange} />
         <br />
         <button onClick={handleUploadAvatar}>Carica Avatar Personale</button>
+
       </div>
+
+      <br /><br />
+      <button onClick={logout} style={{ backgroundColor: 'red', color: 'white', padding: '8px 20px', borderRadius: '5px' }}>
+        Logout
+      </button>
     </div>
   );
 };

@@ -7,19 +7,25 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+
+const verifyToken = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware base
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
-// --- ROTTE API BASE --- //
-app.get('/', (req, res) => {
-  res.send('Chaos System backend online.');
-});
-// Dove salvare i file
+// Crea cartella uploads se non esiste
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+
+// Multer per upload avatar
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
@@ -29,51 +35,48 @@ const storage = multer.diskStorage({
     cb(null, uniqueSuffix + path.extname(file.originalname));
   }
 });
+const upload = multer({ storage });
 
-const fs = require('fs');
+// --- ROTTE API BASE --- //
+app.get('/', (req, res) => {
+  res.send('Chaos System backend online.');
+});
 
-// Ensure the uploads directory exists
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
+// --- REGISTRAZIONE --- //
+app.post('/api/register', async (req, res) => {
+  const { email, password, nickname, avatar } = req.body;
+  const validator = require('validator');
 
-const upload = multer({ storage: storage });
+  if (!email || !password || !nickname || !avatar) {
+    return res.status(400).json({ message: 'Tutti i campi sono obbligatori' });
+  }
 
-// --- REGISTRAZIONE ---
-  app.post('/api/register', async (req, res) => {
-      const { email, password, nickname, avatar } = req.body;
-  
-      if (!email || !password || !nickname || !avatar) {
-          return res.status(400).json({ message: 'Tutti i campi sono obbligatori' });
-      }
-  
-      if (!(require('validator')).isEmail(email)) {
-          return res.status(400).json({ message: 'Email non valida' });
-      }
-  
-      if (password.length < 6) {
-          return res.status(400).json({ message: 'La password deve contenere almeno tra 6 e 16 caratteri' });
-      }
-  
-      try {
-          const existing = await User.findOne({ email });
-          if (existing) {
-              return res.status(400).json({ message: 'Email già registrata' });
-          }
-          const hashedPassword = await bcrypt.hash(password, 10);
-          const newUser = new User({ email, password: hashedPassword, nickname, avatar });
-  
-          await newUser.save();
-          
-          res.status(201).json({ message: 'Utente registrato con successo' });
-      } catch (err) {
-          res.status(500).json({ message: 'Errore interno', error: err.message });
-      }
-  });
-  
+  if (!validator.isEmail(email)) {
+    return res.status(400).json({ message: 'Email non valida' });
+  }
 
- // --- LOGIN ---
+  if (password.length < 6 || password.length > 16) {
+    return res.status(400).json({ message: 'La password deve contenere tra 6 e 16 caratteri' });
+  }
+
+  try {
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return res.status(400).json({ message: 'Email già registrata' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ email, password: hashedPassword, nickname, avatar });
+
+    await newUser.save();
+    res.status(201).json({ message: 'Utente registrato con successo' });
+
+  } catch (err) {
+    res.status(500).json({ message: 'Errore interno', error: err.message });
+  }
+});
+
+// --- LOGIN --- //
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -107,8 +110,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-const verifyToken = require('./middleware/auth');
-
+// --- PATCH PROFILO (aggiorna nickname + avatar) --- //
 app.patch('/api/profile', verifyToken, async (req, res) => {
   const { nickname, avatar } = req.body;
 
@@ -117,7 +119,7 @@ app.patch('/api/profile', verifyToken, async (req, res) => {
   }
 
   try {
-    const userId = req.user.userId; // preso dal verifyToken che decodifica JWT
+    const userId = req.user.userId;
     const user = await User.findById(userId);
 
     if (!user) {
@@ -129,10 +131,13 @@ app.patch('/api/profile', verifyToken, async (req, res) => {
     await user.save();
 
     res.status(200).json({ message: 'Profilo aggiornato con successo' });
+
   } catch (err) {
     res.status(500).json({ message: 'Errore interno', error: err.message });
   }
 });
+
+// --- UPLOAD AVATAR da FILE --- //
 app.post('/api/profile/avatar', verifyToken, upload.single('avatar'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'Nessun file ricevuto' });
@@ -146,7 +151,6 @@ app.post('/api/profile/avatar', verifyToken, upload.single('avatar'), async (req
       return res.status(404).json({ message: 'Utente non trovato' });
     }
 
-    // Salva l'URL dell'avatar (esempio: http://tuodominio/uploads/filename.png)
     const avatarUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
 
     user.avatar = avatarUrl;
@@ -159,7 +163,7 @@ app.post('/api/profile/avatar', verifyToken, upload.single('avatar'), async (req
   }
 });
 
-
+// --- AVVIO SERVER --- //
 connectDB();
 
 app.listen(PORT, () => {
