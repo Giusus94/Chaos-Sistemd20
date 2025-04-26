@@ -7,27 +7,37 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [email, setEmail] = useState(localStorage.getItem('email'));
+  const [nickname, setNickname] = useState(localStorage.getItem('nickname'));
+  const [avatar, setAvatar] = useState(localStorage.getItem('avatar'));
 
   const login = (token, email) => {
+    const generatedNickname = email.split('@')[0]; // esempio: giuseppe@xxx → nickname = giuseppe
+    const generatedAvatar = `https://api.dicebear.com/6.x/initials/svg?seed=${generatedNickname}`; // avatar casuale
+   
+   
     localStorage.setItem('token', token);
     localStorage.setItem('email', email);
+    localStorage.setItem('nickname', generatedNickname);
+    localStorage.setItem('avatar', generatedAvatar);
+
     setToken(token);
     setEmail(email);
-    navigate('/profile');
+    setNickname(generatedNickname);
+    setAvatar(generatedAvatar);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
+    localStorage.clear();
     setToken(null);
     setEmail(null);
-    navigate('/login');
+    setNickname(null);
+    setAvatar(null);
   };
 
   const isAuthenticated = !!token;
 
   return (
-    <AuthContext.Provider value={{ token, email, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ token, email, nickname, avatar, login, logout, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );
