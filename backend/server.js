@@ -15,11 +15,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware base
-const corsOptions = {
-  origin: ['https://chaos-sistemd20.vercel.app', 'https://chaos-sistemd20-mwmwct4jk-giuseppes-projects-282f0567.vercel.app'], // metti qui anche il dominio temporaneo di Vercel
+// --- CORS corretto ---
+const allowedOrigins = [
+  'https://chaos-sistemd20.vercel.app', 
+  'https://chaos-sistemd20-j6ocf6k7t-giuseppes-projects-282f0567.vercel.app'
+];
+
+app.use(cors({
+  origin: allowedOrigins,
   credentials: true,
-};
-app.use(cors(corsOptions));
+}));
 
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
