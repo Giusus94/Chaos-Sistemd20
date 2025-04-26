@@ -16,6 +16,79 @@ const Profile = () => {
     }
   }, [navigate]);
 
+  // ✅ Cambia nickname e rigenera avatar legato
+  const handleNicknameChange = async () => {
+    if (newNickname.trim().length < 3) {
+      toast.error('Il nickname deve avere almeno 3 caratteri.');
+      return;
+    }
+
+    const newAvatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${newNickname}`;
+
+    try {
+      const token = localStorage.getItem('token');
+
+      const res = await fetch('https://chaos-sistemd20.onrender.com/api/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          nickname: newNickname,
+          avatar: newAvatarUrl
+        })
+      });
+
+      if (res.ok) {
+        setNickname(newNickname);
+        setAvatar(newAvatarUrl);
+        localStorage.setItem('nickname', newNickname);
+        localStorage.setItem('avatar', newAvatarUrl);
+        toast.success('Nickname e avatar aggiornati con successo!');
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.message || 'Errore durante l\'aggiornamento');
+      }
+    } catch (err) {
+      toast.error('Errore di rete');
+    }
+  };
+
+  // ✅ Genera solo un nuovo avatar casuale
+  const handleGenerateNewAvatar = async () => {
+    const randomSeed = Math.random().toString(36).substring(2, 10);
+    const newAvatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${randomSeed}`;
+
+    try {
+      const token = localStorage.getItem('token');
+
+      const res = await fetch('https://chaos-sistemd20.onrender.com/api/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          nickname, // Mantieni il nickname attuale
+          avatar: newAvatarUrl
+        })
+      });
+
+      if (res.ok) {
+        setAvatar(newAvatarUrl);
+        localStorage.setItem('avatar', newAvatarUrl);
+        toast.success('Nuovo avatar generato e salvato!');
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.message || 'Errore durante aggiornamento avatar');
+      }
+    } catch (err) {
+      toast.error('Errore di rete');
+    }
+  };
+
+  // ✅ Gestione caricamento file immagine personalizzata
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
   };
@@ -45,9 +118,9 @@ const Profile = () => {
       if (res.ok) {
         setAvatar(data.avatar);
         localStorage.setItem('avatar', data.avatar);
-        toast.success('Avatar aggiornato con successo!');
+        toast.success('Avatar personale caricato con successo!');
       } else {
-        toast.error(data.message || 'Errore durante upload');
+        toast.error(data.message || 'Errore durante l\'upload avatar');
       }
     } catch (err) {
       toast.error('Errore di rete');
@@ -86,7 +159,6 @@ const Profile = () => {
         <input type="file" accept="image/*" onChange={handleFileChange} />
         <br />
         <button onClick={handleUploadAvatar}>Carica Avatar Personale</button>
-
       </div>
     </div>
   );
