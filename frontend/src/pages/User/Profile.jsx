@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { AuthContext } from '../../context/AuthContext'; // Adjust the path as needed
+import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { checkAuth } from '../../utils/auth';
+
 const Profile = () => {
   const navigate = useNavigate();
+  const { email, logout } = useContext(AuthContext); // <-- QUESTA è la chiamata corretta
   const [message, setMessage] = useState('');
-  
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -23,21 +25,21 @@ const Profile = () => {
       .catch(() => {
         navigate('/login');
       });
-  }, []);
+  }, [navigate]);
+
   const handleLogout = () => {
-    const { logout } = useContext(AuthContext);
     logout();
     alert('Logout effettuato con successo.');
-    navigate('/login'); // ritorna alla login
+    navigate('/login');
   };
+
   return (
     <div>
-     <p>Sei autenticato come: <strong>{useContext(AuthContext).email}</strong></p>
-     <p>Sei autenticato come: <strong>{email}</strong></p>
+      <p>Sei autenticato come: <strong>{email}</strong></p>
 
+      <p>{message}</p>
 
-     <button onClick={logout}>Logout</button>
-
+      <button onClick={handleLogout}>Logout</button>
     </div>
   );
 };
