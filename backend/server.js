@@ -15,14 +15,19 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware base
-app.use(cors());
+const corsOptions = {
+  origin: ['https://chaos-sistemd20.vercel.app', 'https://chaos-sistemd20-xxxxxxx.vercel.app'], // metti qui anche il dominio temporaneo di Vercel
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
 // Crea cartella uploads se non esiste
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 // Multer per upload avatar
