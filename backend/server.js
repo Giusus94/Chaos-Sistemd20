@@ -1,7 +1,7 @@
 require('dotenv').config();
+const express = require('express');
 const connectDB = require('./db');
 const User = require('./models/User');
-const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -14,14 +14,21 @@ const verifyToken = require('./middleware/auth');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --- CORS dinamico corretto ---
+// --- CORS automatico ---
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || 
-        origin.endsWith('.vercel.app') || 
-        origin.includes('localhost')) {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // Permetti strumenti tipo Postman
+
+    const allowedOrigins = [
+      'https://chaos-sistemd20.vercel.app',
+      'https://chaos-sistemd20.onrender.com'
+    ];
+    const vercelTemporaryPattern = /^https:\/\/chaos-sistemd20-[a-z0-9-]+\.vercel\.app$/;
+
+    if (allowedOrigins.includes(origin) || vercelTemporaryPattern.test(origin)) {
       callback(null, true);
     } else {
+      console.error(`CORS block: Origin ${origin} non consentito`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -29,34 +36,35 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Middleware base
+// --- Middlewares ---
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Crea cartella uploads se non esiste
+// --- Creazione cartella uploads ---
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+  fs.mkdirSync(uploadsDir);
 }
 
-// Multer per upload avatar
+// --- Multer config ---
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+  destination: (_, __, cb) => {
+    cb(null, uploadsDir);
   },
-  filename: (req, file, cb) => {
+  filename: (_, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
   }
 });
 const upload = multer({ storage });
 
-// --- ROTTE API BASE --- //
-app.get('/', (req, res) => {
+// --- API ROUTES ---
+// HOME
+app.get('/', (_, res) => {
   res.send('Chaos System backend online.');
 });
 
-// --- REGISTRAZIONE --- //
+// REGISTER
 app.post('/api/register', async (req, res) => {
   const { email, password, nickname, avatar } = req.body;
   const validator = require('validator');
@@ -90,22 +98,16 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// --- LOGIN --- //
+// LOGIN
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(401).json({ message: 'Credenziali non valide' });
-    }
+    if (!user) return res.status(401).json({ message: 'Credenziali non valide' });
 
     const isValid = await bcrypt.compare(password, user.password);
-
-    if (!isValid) {
-      return res.status(401).json({ message: 'Credenziali non valide' });
-    }
+    if (!isValid) return res.status(401).json({ message: 'Credenziali non valide' });
 
     const token = jwt.sign(
       { userId: user._id, email: user.email },
@@ -113,18 +115,14 @@ app.post('/api/login', async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    res.status(200).json({
-      token,
-      nickname: user.nickname,
-      avatar: user.avatar
-    });
+    res.status(200).json({ token, nickname: user.nickname, avatar: user.avatar });
 
   } catch (err) {
     res.status(500).json({ message: 'Errore interno', error: err.message });
   }
 });
 
-// --- PATCH PROFILO (aggiorna nickname + avatar) --- //
+// PATCH PROFILO
 app.patch('/api/profile', verifyToken, async (req, res) => {
   const { nickname, avatar } = req.body;
 
@@ -133,12 +131,8 @@ app.patch('/api/profile', verifyToken, async (req, res) => {
   }
 
   try {
-    const userId = req.user.userId;
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ message: 'Utente non trovato' });
-    }
+    const user = await User.findById(req.user.userId);
+    if (!user) return res.status(404).json({ message: 'Utente non trovato' });
 
     user.nickname = nickname;
     user.avatar = avatar;
@@ -151,19 +145,15 @@ app.patch('/api/profile', verifyToken, async (req, res) => {
   }
 });
 
-// --- UPLOAD AVATAR da FILE --- //
+// UPLOAD AVATAR DA FILE
 app.post('/api/profile/avatar', verifyToken, upload.single('avatar'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'Nessun file ricevuto' });
   }
 
   try {
-    const userId = req.user.userId;
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ message: 'Utente non trovato' });
-    }
+    const user = await User.findById(req.user.userId);
+    if (!user) return res.status(404).json({ message: 'Utente non trovato' });
 
     const avatarUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
 
@@ -177,7 +167,7 @@ app.post('/api/profile/avatar', verifyToken, upload.single('avatar'), async (req
   }
 });
 
-// --- AVVIO SERVER --- //
+// AVVIO SERVER
 connectDB();
 
 app.listen(PORT, () => {
