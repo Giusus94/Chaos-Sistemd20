@@ -14,27 +14,22 @@ const verifyToken = require('./middleware/auth');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware base
-// --- CORS corretto ---
-const allowedOrigins = [
-  'https://chaos-sistemd20.vercel.app',
-  'https://chaos-sistemd20-hcfgpj0xs-giuseppes-projects-282f0567.vercel.app'
-];
-
+// --- CORS dinamico corretto ---
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || (typeof origin === 'string' && origin.endsWith('.vercel.app'))) {
-      return callback(null, true);
+    if (!origin || 
+        origin.endsWith('.vercel.app') || 
+        origin.includes('localhost')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
     }
-    console.error(`CORS error: Origin ${origin} not allowed`);
-    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
 };
-
 app.use(cors(corsOptions));
 
-
+// Middleware base
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
