@@ -44,7 +44,8 @@ const corsOptions = {
 
 // 🛡️ Applicazione del middleware CORS
 app.use(cors(corsOptions));
-
+// 🛡️ Risposta automatica alle richieste OPTIONS (preflight CORS)
+app.options('*', cors(corsOptions));
 // 🧱 Middleware per il parsing del corpo delle richieste in formato JSON
 app.use(express.json());
 
