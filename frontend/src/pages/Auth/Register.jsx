@@ -4,77 +4,42 @@ import { toast } from 'react-toastify';
 
 const Register = () => {
   const navigate = useNavigate();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nickname, setNickname] = useState('');
-  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Se non viene inserito un avatar personalizzato, genera uno random
-    const randomAvatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}`;
-
     try {
-      const res =API_URL = process.env.REACT_APP_API_URL; 
-      fetch(`${API_URL}/api/register`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/register`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, nickname, avatar: randomAvatar }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, nickname, avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}` }),
         credentials: 'include',
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        toast.success('Registrazione completata! Ora effettua il login.');
+        toast.success('Registrazione completata! Ora puoi fare il login.');
         navigate('/login');
       } else {
-        setError(data.message || 'Registrazione fallita');
-        toast.error(data.message || 'Registrazione fallita');
+        toast.error(data.message || 'Errore nella registrazione.');
       }
     } catch (err) {
-      setError('Errore di rete o server non raggiungibile');
-      toast.error('Errore di rete o server non raggiungibile');
+      toast.error('Errore di rete.');
     }
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '60px auto', textAlign: 'center' }}>
-      <h2>Registrazione</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div style={{ maxWidth: '400px', margin: 'auto', marginTop: '60px', textAlign: 'center' }}>
+      <h2>Registrati</h2>
       <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ marginBottom: '10px', padding: '8px', width: '100%' }}
-        />
-        <br />
-        <input
-          type="password"
-          placeholder="Password (6-16 caratteri)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ marginBottom: '10px', padding: '8px', width: '100%' }}
-        />
-        <br />
-        <input
-          type="text"
-          placeholder="Nickname"
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          required
-          style={{ marginBottom: '10px', padding: '8px', width: '100%' }}
-        />
-        <br />
-        <button type="submit" style={{ padding: '8px 20px' }}>Registrati</button>
+        <input type="email" placeholder="Email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input type="password" placeholder="Password (6-16 caratteri)" required value={password} onChange={(e) => setPassword(e.target.value)} />
+        <input type="text" placeholder="Nickname" required value={nickname} onChange={(e) => setNickname(e.target.value)} />
+        <button type="submit">Registrati</button>
       </form>
     </div>
   );
