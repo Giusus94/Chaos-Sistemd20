@@ -1,73 +1,50 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 
 const Navbar = () => {
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Recupera i dati dal localStorage
-  const token = localStorage.getItem('token');
-  const nickname = localStorage.getItem('nickname');
-  const avatar = localStorage.getItem('avatar');
-
-  // Funzione per logout
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('nickname');
-    localStorage.removeItem('avatar');
-    toast.success('Logout effettuato con successo.');
+    logout();
+    toast.success('Logout effettuato!');
     navigate('/login');
   };
 
   return (
-    <nav style={{
-      background: '#111',
-      color: 'white',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '10px 20px'
-    }}>
-      
-      {/* Logo principale */}
-      <div>
-        <Link to="/" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '22px' }}>
-          Chaos System Arkadia2099
-        </Link>
-      </div>
+    <nav style={{ padding: '10px', background: '#111', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Link to="/" style={{ textDecoration: 'none', color: 'white', fontSize: '20px' }}>
+        Chaos System
+      </Link>
 
-      {/* Sezioni navigazione */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-        {!token ? (
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        {user?.token ? (
           <>
-            <Link to="/login" style={{ color: 'white', textDecoration: 'none' }}>Login</Link>
-            <Link to="/register" style={{ color: 'white', textDecoration: 'none' }}>Registrati</Link>
+            <Link to="/profile" style={{ color: 'white', marginRight: '10px', textDecoration: 'none' }}>
+              {user.nickname}
+            </Link>
+            {user.avatar && (
+              <img
+                src={user.avatar}
+                alt="Avatar"
+                onClick={() => navigate('/profile')}
+                style={{ width: '40px', height: '40px', borderRadius: '50%', marginRight: '10px', cursor: 'pointer' }}
+              />
+            )}
+            <button onClick={handleLogout} style={{ padding: '5px 10px', background: 'red', color: 'white', border: 'none', borderRadius: '5px' }}>
+              Logout
+            </button>
           </>
         ) : (
           <>
-            <Link to="/profile" style={{ color: 'white', textDecoration: 'none' }}>
-              {/* Mostra avatar + nickname */}
-              {avatar && (
-                <img src={avatar} alt="Avatar" style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  marginRight: '10px',
-                  verticalAlign: 'middle'
-                }} />
-              )}
-              <span>{nickname}</span>
+            <Link to="/login" style={{ color: 'white', marginRight: '10px', textDecoration: 'none' }}>
+              Login
             </Link>
-            <button onClick={handleLogout} style={{
-              backgroundColor: '#e63946',
-              border: 'none',
-              padding: '8px 12px',
-              color: 'white',
-              cursor: 'pointer',
-              borderRadius: '5px'
-            }}>
-              Logout
-            </button>
+            <Link to="/register" style={{ color: 'white', textDecoration: 'none' }}>
+              Registrati
+            </Link>
           </>
         )}
       </div>

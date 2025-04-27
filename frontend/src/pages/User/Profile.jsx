@@ -1,87 +1,83 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { user, logout } = useContext(AuthContext);
 
-  // Stati locali per nickname, avatar e nuovo nickname
-  const [nickname, setNickname] = useState(localStorage.getItem('nickname') || '');
-  const [avatar, setAvatar] = useState(localStorage.getItem('avatar') || '');
   const [newNickname, setNewNickname] = useState('');
+  const [previewAvatar, setPreviewAvatar] = useState(user?.avatar || '');
 
-  // Effetto per proteggere la pagina: se non loggato ➔ redirect login
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!user || !user.token) {
       navigate('/login');
     }
-  }, [navigate]);
+  }, [user, navigate]);
 
-  // Funzione per aggiornare nickname + avatar
-  const handleNicknameChange = async () => {
+  const handleUpdateProfile = async () => {
     if (newNickname.trim().length < 3) {
       toast.error('Il nickname deve avere almeno 3 caratteri.');
       return;
     }
 
-    const newAvatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${newNickname}`;
+    const newAvatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${newNickname}`;
 
     try {
-      const token = localStorage.getItem('token');
-
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/profile`, {
+      const res = await fetch('/api/profile', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${user.token}`
         },
-        body: JSON.stringify({ nickname: newNickname, avatar: newAvatarUrl })
+        credentials: 'include',
+        body: JSON.stringify({ nickname: newNickname, avatar: newAvatar })
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        // Aggiorna localStorage e stati
-        setNickname(newNickname);
-        setAvatar(newAvatarUrl);
-        localStorage.setItem('nickname', newNickname);
-        localStorage.setItem('avatar', newAvatarUrl);
         toast.success('Profilo aggiornato!');
+        setPreviewAvatar(newAvatar);
       } else {
-        toast.error(data.message || 'Errore durante aggiornamento.');
+        toast.error(data.message || 'Errore durante l\'aggiornamento');
       }
     } catch (err) {
-      toast.error('Errore di rete.');
+      toast.error('Errore di rete');
     }
   };
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h1>Profilo Utente</h1>
+    <div style={{ maxWidth: '400px', margin: '60px auto', textAlign: 'center' }}>
+      <h1>Il tuo profilo</h1>
 
-      {/* Avatar */}
-      <img
-        src={avatar}
-        alt="Avatar"
-        style={{ width: '100px', height: '100px', borderRadius: '50%', marginBottom: '20px' }}
-      />
-
-      {/* Nickname */}
-      <h2>{nickname}</h2>
-
-      {/* Form modifica nickname */}
-      <div style={{ marginTop: '20px' }}>
-        <input
-          type="text"
-          placeholder="Nuovo Nickname"
-          value={newNickname}
-          onChange={(e) => setNewNickname(e.target.value)}
-          style={{ padding: '8px', width: '200px' }}
+      {previewAvatar && (
+        <img
+          src={previewAvatar}
+          alt="Avatar"
+          style={{ width: '100px', height: '100px', borderRadius: '50%', marginBottom: '20px' }}
         />
-        <br /><br />
-        <button onClick={handleNicknameChange} style={{ marginRight: '10px' }}>Aggiorna Nickname + Avatar</button>
-      </div>
+      )}
+
+      <h2>{user?.nickname || 'Nickname non disponibile'}</h2>
+
+      <input
+        type="text"
+        placeholder="Nuovo nickname"
+        value={newNickname}
+        onChange={(e) => setNewNickname(e.target.value)}
+        style={{ marginBottom: '10px', padding: '8px', width: '100%' }}
+      />
+      <br />
+
+      <button onClick={handleUpdateProfile} style={{ margin: '10px', padding: '10px 20px' }}>
+        Aggiorna Nickname + Avatar
+      </button>
+
+      <button onClick={logout} style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: 'red', color: 'white' }}>
+        Logout
+      </button>
     </div>
   );
 };
