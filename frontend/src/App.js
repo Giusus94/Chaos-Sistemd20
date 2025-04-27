@@ -1,24 +1,30 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
-import Profile from './pages/User/Profile';
-import { AuthProvider } from './context/AuthContext'; // Questo NON serve qui se lo hai già in index.js
+import Profile from './pages/Profile';
 
-function App() {
+const App = () => {
   return (
-    <>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<div>Chaos System Arcadia2099 🌐 Homepage</div>} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="*" element={<div>Pagina non trovata</div>} />
-      </Routes>
-    </>
+    <AuthProvider>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="*" element={<h1 style={{ textAlign: 'center', marginTop: '50px' }}>404 - Pagina non trovata</h1>} />
+        </Routes>
+        <ToastContainer position="top-right" autoClose={3000} />
+      </Router>
+    </AuthProvider>
   );
-}
+};
 
 export default App;
