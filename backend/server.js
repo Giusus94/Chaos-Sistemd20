@@ -26,7 +26,7 @@ const corsOptions = {
     const vercelTemporaryPattern =
       /^https:\/\/chaos-sistemd20-[a-z0-9-]+\.vercel\.app$/;
 
-    if (
+    if (!origin ||
       allowedOrigins.includes(origin) ||
       vercelTemporaryPattern.test(origin)
     ) {

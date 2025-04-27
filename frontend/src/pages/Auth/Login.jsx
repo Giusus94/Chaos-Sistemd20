@@ -15,10 +15,12 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch('https://chaos-sistemd20.onrender.com/api/login', {
+      const API_URL = process.env.REACT_APP_API_URL;
+      fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
       });
 
       const data = await res.json();

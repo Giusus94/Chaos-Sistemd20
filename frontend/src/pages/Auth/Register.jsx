@@ -17,10 +17,14 @@ const Register = () => {
     const randomAvatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${nickname}`;
 
     try {
-      const res = await fetch('https://chaos-sistemd20.onrender.com/api/register', {
+      const res =API_URL = process.env.REACT_APP_API_URL; 
+      fetch(`${API_URL}/api/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, nickname, avatar: randomAvatar })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, nickname, avatar: randomAvatar }),
+        credentials: 'include',
       });
 
       const data = await res.json();
