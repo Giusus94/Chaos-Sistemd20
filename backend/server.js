@@ -1,58 +1,55 @@
-// 📦 Importazioni
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const connectDB = require('./db');
+const User = require('./models/User');
+const verifyToken = require('./middleware/auth');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const connectDB = require('./db');
-const User = require('./models/User');
-const verifyToken = require('./middleware/auth');
-
 const app = express();
-
-// 🔥 Porta
 const PORT = process.env.PORT || 3000;
 
-// 🌐 CORS dinamico
-const corsOptions = {
-  origin: (origin, callback) => {
-    const allowedOrigins = [
-      'https://chaos-sistemd20.vercel.app',
-      'https://chaos-sistemd20.onrender.com'
-    ];
-    const vercelTemporaryPattern = /^https:\/\/chaos-sistemd20-[a-z0-9-]+\.vercel\.app$/;
+// 🌐 CORS configurato manualmente
+const allowedOrigins = [
+  'https://chaos-sistemd20.vercel.app',
+  'https://chaos-sistemd20.onrender.com'
+];
+const vercelPattern = /^https:\/\/chaos-sistemd20-[a-z0-9-]+\.vercel\.app$/;
 
-    if (!origin || allowedOrigins.includes(origin) || vercelTemporaryPattern.test(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-};
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // 🔥 RISOLVE definitivamente il preflight CORS!
+  if (allowedOrigins.includes(origin) || vercelPattern.test(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization');
+  }
 
-// 📦 Middlewares
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200); // Rispondi immediatamente ai preflight OPTIONS
+  }
+
+  next();
+});
+
+// 📦 Middleware base
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// 📁 Crea cartella uploads se non esiste
+// 📁 Cartella uploads
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir);
 }
 
-// 📤 Configurazione Multer
+// 📤 Multer upload avatar
 const storage = multer.diskStorage({
-  destination: (_, __, cb) => {
-    cb(null, uploadsDir);
-  },
+  destination: (_, __, cb) => cb(null, uploadsDir),
   filename: (_, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
@@ -60,12 +57,11 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// 📍 Home
+// 📍 Rotte API
 app.get('/', (_, res) => {
   res.send('Chaos System backend online.');
 });
 
-// 📥 Register
 app.post('/api/register', async (req, res) => {
   const { email, password, nickname, avatar } = req.body;
   const validator = require('validator');
@@ -73,11 +69,9 @@ app.post('/api/register', async (req, res) => {
   if (!email || !password || !nickname || !avatar) {
     return res.status(400).json({ message: 'Tutti i campi sono obbligatori' });
   }
-
   if (!validator.isEmail(email)) {
     return res.status(400).json({ message: 'Email non valida' });
   }
-
   if (password.length < 6 || password.length > 16) {
     return res.status(400).json({ message: 'La password deve contenere tra 6 e 16 caratteri' });
   }
@@ -90,15 +84,14 @@ app.post('/api/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ email, password: hashedPassword, nickname, avatar });
-
     await newUser.save();
+
     res.status(201).json({ message: 'Utente registrato con successo' });
   } catch (err) {
     res.status(500).json({ message: 'Errore interno', error: err.message });
   }
 });
 
-// 🔐 Login
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -125,7 +118,6 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// ✏️ Aggiorna profilo
 app.patch('/api/profile', verifyToken, async (req, res) => {
   const { nickname, avatar } = req.body;
 
@@ -151,7 +143,6 @@ app.patch('/api/profile', verifyToken, async (req, res) => {
   }
 });
 
-// 📤 Upload avatar file
 app.post('/api/profile/avatar', verifyToken, upload.single('avatar'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'Nessun file ricevuto' });
@@ -175,9 +166,8 @@ app.post('/api/profile/avatar', verifyToken, upload.single('avatar'), async (req
   }
 });
 
-// 🔌 Connetti DB e avvia server
+// 🔌 Connetti il DB e avvia il server
 connectDB();
-
 app.listen(PORT, () => {
-  console.log(`✅ Server attivo su porta ${PORT}`);
+  console.log(`✅ Server attivo sulla porta ${PORT}`);
 });
