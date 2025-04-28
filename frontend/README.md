@@ -1,12 +1,36 @@
-# Chaos System Platform
+# Chaos System Arcadia2099
 
-Frontend: React + Context API
-Backend: API serverless (Vercel)
-Database: MongoDB Atlas
+🚀 Progetto FullStack completo
 
-## Comandi
-- npm install
-- npm run dev
-- npm run build
+## Struttura
 
-Deploy: collegare a Vercel e cliccare Deploy.
+- **Frontend**: React + Context + React Router
+- **Backend API**: Vercel serverless API
+- **Database**: MongoDB Atlas
+- **Autenticazione**: JWT + Context API
+
+## Funzionalità
+
+- Login / Registrazione
+- Gestione profilo utente (nickname + avatar)
+- Sistema di Toast notifiche
+- Navbar dinamica
+- Gestione stato utente globale
+
+## Tecnologie principali
+
+- React.js
+- MongoDB
+- Vercel Hosting
+- React Router v6
+- React Toastify
+- TailwindCSS (opzionale)
+
+---
+
+## Setup rapido
+
+```bash
+npm install
+npm run build
+npm run start
