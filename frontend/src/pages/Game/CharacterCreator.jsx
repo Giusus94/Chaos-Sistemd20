@@ -1,1 +1,0 @@
-const CharacterCreator = () => <h2>Character Creator</h2>; export default CharacterCreator;

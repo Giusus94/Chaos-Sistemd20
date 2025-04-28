@@ -1,1 +1,0 @@
-const Factions = () => <h2>Factions Page</h2>; export default Factions;
