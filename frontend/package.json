@@ -2,18 +2,21 @@
   "name": "chaos-frontend",
   "version": "1.0.0",
   "private": true,
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+  "engines": {
+    "node": "18.x"
   },
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.30.0",
-    "react-scripts": "^3.4.4",
-    "react-toastify": "^8.2.0"
+    "react-scripts": "^5.0.1",
+    "react-toastify": "^11.0.5"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
   "browserslist": {
     "production": [
