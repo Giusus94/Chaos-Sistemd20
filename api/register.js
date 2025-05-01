@@ -1,6 +1,8 @@
-import { connectToDatabase } from "./mongodb"; // se usi un helper
+import { MongoClient } from "mongodb";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+
+const uri = process.env.MONGO_URI;
+const client = new MongoClient(uri);
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -10,30 +12,29 @@ export default async function handler(req, res) {
   const { email, password, nickname, avatar } = req.body;
 
   if (!email || !password || !nickname || !avatar) {
-    return res.status(400).json({ message: "Campi mancanti" });
+    return res.status(400).json({ message: "Tutti i campi sono obbligatori" });
   }
 
   try {
-    const { db } = await connectToDatabase();
-    const existingUser = await db.collection("users").findOne({ email });
+    await client.connect();
+    const db = client.db("chaossystem");
 
+    const existingUser = await db.collection("users").findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Utente già registrato" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = {
+    await db.collection("users").insertOne({
       email,
       password: hashedPassword,
       nickname,
       avatar,
       createdAt: new Date()
-    };
-
-    await db.collection("users").insertOne(newUser);
+    });
 
     return res.status(200).json({ message: "Registrazione completata!" });
   } catch (err) {
-    return res.status(500).json({ message: "Errore del server" });
+    return res.status(500).json({ message: "Errore del server", error: err.message });
   }
 }
