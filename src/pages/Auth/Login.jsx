@@ -1,49 +1,59 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
+
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
-      if (res.ok && data && data.token) {
-        login(data);
-        navigate('/profile');
+      if (res.ok) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("nickname", data.nickname);
+        localStorage.setItem("avatar", data.avatar);
+        alert("Login riuscito!");
+        navigate("/profile");
       } else {
-        alert(data?.message || 'Errore di login');
+        alert(data.message || "Errore di login.");
       }
     } catch (err) {
-      console.error('Errore di rete');
+      alert("Errore di rete.");
     }
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '60px auto' }}>
+    <div className="container">
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
-        <input type="email" placeholder="Email" value={email}
-          onChange={(e) => setEmail(e.target.value)} required />
-        <br />
-        <input type="password" placeholder="Password" value={password}
-          onChange={(e) => setPassword(e.target.value)} required />
-        <br />
-        <button type="submit">Login</button>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          required
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          required
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button type="submit">Accedi</button>
       </form>
     </div>
   );
 };
 
 export default Login;
-console.log("Login avvenuto, token:", data?.token);
