@@ -46,3 +46,4 @@ const Login = () => {
 };
 
 export default Login;
+console.log("Login avvenuto, token:", data?.token);

@@ -29,3 +29,4 @@ const Profile = () => {
 };
 
 export default Profile;
+console.log("Utente corrente:", user);
