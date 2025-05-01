@@ -19,7 +19,10 @@ module.exports = async function handler(req, res) {
       return res.status(404).json({ message: "Utente non trovato" });
     }
 
-    if (user.password !== password) {
+    const bcrypt = require("bcrypt");
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
       return res.status(401).json({ message: "Password errata" });
     }
 
