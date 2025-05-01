@@ -1,5 +1,6 @@
-import { connectToDatabase } from "./_db";
+import { connectToDatabase } from "./mongodb"; // se usi un helper
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -8,8 +9,8 @@ export default async function handler(req, res) {
 
   const { email, password, nickname, avatar } = req.body;
 
-  if (!email || !password || !nickname) {
-    return res.status(400).json({ message: "Campi richiesti mancanti" });
+  if (!email || !password || !nickname || !avatar) {
+    return res.status(400).json({ message: "Campi mancanti" });
   }
 
   try {
@@ -17,21 +18,22 @@ export default async function handler(req, res) {
     const existingUser = await db.collection("users").findOne({ email });
 
     if (existingUser) {
-      return res.status(400).json({ message: "Email già registrata" });
+      return res.status(400).json({ message: "Utente già registrato" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    await db.collection("users").insertOne({
+    const newUser = {
       email,
       password: hashedPassword,
       nickname,
-      avatar: avatar || "",
-    });
+      avatar,
+      createdAt: new Date()
+    };
 
-    res.status(201).json({ message: "Registrazione completata con successo" });
+    await db.collection("users").insertOne(newUser);
+
+    return res.status(200).json({ message: "Registrazione completata!" });
   } catch (err) {
-    console.error("Errore:", err);
-    res.status(500).json({ message: "Errore server" });
+    return res.status(500).json({ message: "Errore del server" });
   }
 }
