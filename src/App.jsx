@@ -1,19 +1,27 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Login";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
 import Register from "./pages/Register";
+import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import Marketplace from "./pages/Marketplace";
+import YourGames from "./pages/YourGames";
 
-const App = () => {
+function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/login" />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="*" element={<h1>404 - Page Not Found</h1>} />
-    </Routes>
+    <BrowserRouter>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/your-games" element={<YourGames />} />
+      </Routes>
+    </BrowserRouter>
   );
-};
+}
 
 export default App;

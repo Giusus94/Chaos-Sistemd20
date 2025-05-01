@@ -1,34 +1,15 @@
-// Navbar Component - React
+import React from "react";
+import { Link } from "react-router-dom";
 
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-
-const Navbar = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  return (
-    <nav style={{ padding: '10px', background: '#222', color: 'white' }}>
-      <Link to="/">Home</Link>{" "}
-      {user ? (
-        <>
-          <Link to="/profile">Profilo</Link>{" "}
-          <button onClick={handleLogout}>Logout</button>
-        </>
-      ) : (
-        <>
-          <Link to="/login">Login</Link>{" "}
-          <Link to="/register">Registrati</Link>
-        </>
-      )}
-    </nav>
-  );
-};
+const Navbar = () => (
+  <nav style={{ padding: "1rem", background: "#1e1e1e", display: "flex", gap: "1rem" }}>
+    <Link to="/">Home</Link>
+    <Link to="/register">Register</Link>
+    <Link to="/login">Login</Link>
+    <Link to="/profile">Profile</Link>
+    <Link to="/marketplace">Marketplace</Link>
+    <Link to="/your-games">Your Games</Link>
+  </nav>
+);
 
 export default Navbar;
