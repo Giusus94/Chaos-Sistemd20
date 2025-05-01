@@ -15,7 +15,7 @@ const Register = () => {
 
   const generateAvatar = () => {
     const seed = Math.random().toString(36).substring(7);
-    const url = ('https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}');
+    const url = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
     setAvatar(url);
   };
 
