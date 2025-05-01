@@ -1,5 +1,3 @@
-// Register Page - React
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,14 +17,15 @@ const Register = () => {
       });
 
       const data = await res.json();
-      if (res.ok) {
+      if (res.ok && data && data.message) {
         alert('Registrazione completata!');
         navigate('/login');
       } else {
-        alert(data.message);
+        alert(data?.message || 'Errore di registrazione');
       }
     } catch (err) {
       console.error('Errore di rete');
+      alert('Errore di connessione. Riprova più tardi.');
     }
   };
 

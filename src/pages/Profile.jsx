@@ -1,14 +1,18 @@
-// Profile Page - React
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
-  if (!user) {
-    return <h2>Non sei loggato</h2>;
-  }
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
+
+  if (!user) return null;
 
   return (
     <div style={{ textAlign: 'center', marginTop: '50px' }}>

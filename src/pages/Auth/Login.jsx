@@ -1,5 +1,3 @@
-// Login Page - React
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -20,11 +18,11 @@ const Login = () => {
       });
 
       const data = await res.json();
-      if (res.ok) {
+      if (res.ok && data && data.token) {
         login(data);
         navigate('/profile');
       } else {
-        alert(data.message);
+        alert(data?.message || 'Errore di login');
       }
     } catch (err) {
       console.error('Errore di rete');
