@@ -1,30 +1,37 @@
-// frontend/src/api/profile.js
+import { connectToDatabase } from "./_db";
+import bcrypt from "bcryptjs";
 
-const API_URL = process.env.REACT_APP_API_URL || "https://chaos-sistemd20.vercel.app/api";
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Metodo non consentito" });
+  }
 
-export async function updateProfileAPI(data, token) {
-  const res = await fetch(`${API_URL}/profile`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  });
-  return res.json();
-}
+  const { email, password, nickname, avatar } = req.body;
 
-export async function uploadAvatarAPI(file, token) {
-  const formData = new FormData();
-  formData.append('avatar', file);
+  if (!email || !password || !nickname) {
+    return res.status(400).json({ message: "Campi richiesti mancanti" });
+  }
 
-  const res = await fetch(`${API_URL}/profile/avatar`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-    body: formData,
-  });
+  try {
+    const { db } = await connectToDatabase();
+    const existingUser = await db.collection("users").findOne({ email });
 
-  return res.json();
+    if (existingUser) {
+      return res.status(400).json({ message: "Email già registrata" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await db.collection("users").insertOne({
+      email,
+      password: hashedPassword,
+      nickname,
+      avatar: avatar || "",
+    });
+
+    res.status(201).json({ message: "Registrazione completata con successo" });
+  } catch (err) {
+    console.error("Errore:", err);
+    res.status(500).json({ message: "Errore server" });
+  }
 }
