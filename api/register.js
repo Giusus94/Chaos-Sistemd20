@@ -1,4 +1,4 @@
-const { connectToDatabase } = require("../../lib/mongodb");
+const { connectToDatabase } = require("../lib/mongodb");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
