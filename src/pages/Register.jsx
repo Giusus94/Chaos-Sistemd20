@@ -19,11 +19,12 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch("/api/register", {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, nickname, avatar })
+      body: JSON.stringify({ email, password, nickname, avatar }),
     });
+    
     const data = await res.json();
     if (res.ok) {
       alert("Registrazione completata!");
