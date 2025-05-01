@@ -14,7 +14,7 @@ const Register = () => {
 
   const generateAvatar = () => {
     const seed = Math.random().toString(36).substring(7);
-    setAvatar(\`https://api.dicebear.com/7.x/adventurer/svg?seed=\${seed}\`);
+    setAvatar(`https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`);
   };
 
   const handleSubmit = async (e) => {
