@@ -14,7 +14,7 @@ console.log ("[DEBUG] Dati Ricevuti:",{email, password});
     console.log("DatiMancanti");
     return res.status(400).json({ message: "Email e password sono obbligatori" });
   }
-
+  
   try {
     const { db } = await connectToDatabase();
     console.log(" Connessione a MongoDB riuscita!");
