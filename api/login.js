@@ -1,7 +1,7 @@
 const { connectToDatabase } = require("../lib/mongodb");
 
 module.exports = async function handler(req, res) {
-  console.log([DEBUG] Richiesta ricevuta su api/login");
+  console.log("[DEBUG] Richiesta ricevuta su api/login");
     
   if (req.method !== "POST") {
     console.log("Metodo non  supportato:", req.method);
