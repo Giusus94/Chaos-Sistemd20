@@ -27,7 +27,7 @@ console.log ("[DEBUG] Dati Ricevuti:",{email, password});
     }
     
 
-    const bcrypt = require("bcrypt");
+    const bcrypt = require("bcryptjs");
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
