@@ -9,7 +9,7 @@ module.exports = async function handler(req, res) {
   }
 
   const { email, password } = req.body;
-console.log ("[DEBUG] Dati Ricevuti:", "email e password sono obbligatori"  });
+console.log ("[DEBUG] Dati Ricevuti:",{email, password});
   if (!email || !password) {
     console.log("DatiMancanti");
     return res.status(400).json({ message: "Email e password sono obbligatori" });
