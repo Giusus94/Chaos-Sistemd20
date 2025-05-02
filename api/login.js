@@ -50,4 +50,4 @@ console.log ("[DEBUG] Dati Ricevuti:",{email, password});
     console.error("Errore nel login:", err);
     return res.status(500).json({ message: "Errore del server", error: err.message });
   }
-}
+};
