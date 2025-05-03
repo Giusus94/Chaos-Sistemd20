@@ -1,24 +1,36 @@
 
 // ✅ Profile.jsx
-import { useEffect, useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function Profile() {
-  const [user, setUser] = useState(null);
+const Profile = () => {
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
-  if (!user) return <p>Caricamento...</p>;
+  if (!user) {
+    return <p>Caricamento dati...</p>;
+  }
 
   return (
-    <div>
-      <h2>Benvenuto, {user.nickname || "-"}</h2>
-      <img src={user.avatar} alt="Avatar" width={100} height={100} />
+    <div style={{ padding: "2rem", color: "white" }}>
+      <h2>Benvenuto, {user.nickname}</h2>
+      <img src={user.avatar} alt="Avatar" width={80} />
       <p>Email: {user.email}</p>
+      {user.role === "admin" && (
+        <>
+          <p style={{ color: "lightgreen" }}>👑 Admin</p>
+          <button onClick={() => navigate("/admin")}>Vai alla Admin Dashboard</button>
+        </>
+      )}
+      <br />
+      <button onClick={handleLogout}>Logout</button>
     </div>
   );
-}
+};
+
+export default Profile;
