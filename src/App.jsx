@@ -7,19 +7,21 @@ import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import Marketplace from "./pages/Marketplace";
 import YourGames from "./pages/YourGames";
-import AdminDashboard from "./pages/AdminDashboard";
 import RequireAuth from "./components/RequireAuth";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
     <BrowserRouter>
+      {/* ✅ Navbar sempre visibile */}
       <Navbar />
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
-        {/* 🔐 Rotte protette */}
+        {/* ✅ Route protette */}
         <Route
           path="/profile"
           element={
@@ -44,8 +46,6 @@ function App() {
             </RequireAuth>
           }
         />
-
-        {/* 🔐 Solo Admin */}
         <Route
           path="/admin"
           element={

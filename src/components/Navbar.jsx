@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
+  // Ricarica utente ogni volta che cambia la location
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
+    setUser(storedUser ? JSON.parse(storedUser) : null);
+  }, [location]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -21,10 +21,12 @@ const Navbar = () => {
   return (
     <nav style={{ padding: "1rem", background: "#1e1e1e", display: "flex", gap: "1rem" }}>
       <Link to="/">Home</Link>
-      {!user && <>
-        <Link to="/register">Register</Link>
-        <Link to="/login">Login</Link>
-      </>}
+      {!user && (
+        <>
+          <Link to="/register">Register</Link>
+          <Link to="/login">Login</Link>
+        </>
+      )}
       {user && (
         <>
           <Link to="/profile">Profile</Link>
