@@ -1,5 +1,5 @@
 const { connectToDatabase } = require("../lib/mongodb");
-const bcrypt = require("bcryptjs");
+const bcryptjs = require("bcryptjs");
 
 module.exports = async function handler(req, res) {
   console.log("[DEBUG] Richiesta ricevuta su /api/login");

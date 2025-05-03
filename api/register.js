@@ -1,5 +1,5 @@
 const { connectToDatabase } = require("../lib/mongodb");
-const bcrypt = require("bcryptjs"); // <--- IMPORTA bcryptjs
+const bcryptjs = require("bcryptjs"); // <--- IMPORTA bcryptjs
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
