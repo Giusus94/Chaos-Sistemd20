@@ -7,7 +7,8 @@ import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import Marketplace from "./pages/Marketplace";
 import YourGames from "./pages/YourGames";
-import RequireAuth from "./components/RequireAuth"; // ✅ importa il wrapper
+import AdminDashboard from "./pages/AdminDashboard";
+import RequireAuth from "./components/RequireAuth";
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
-        {/* ✅ Route protette */}
+        {/* 🔐 Rotte protette */}
         <Route
           path="/profile"
           element={
@@ -40,6 +41,16 @@ function App() {
           element={
             <RequireAuth>
               <YourGames />
+            </RequireAuth>
+          }
+        />
+
+        {/* 🔐 Solo Admin */}
+        <Route
+          path="/admin"
+          element={
+            <RequireAuth>
+              <AdminDashboard />
             </RequireAuth>
           }
         />
