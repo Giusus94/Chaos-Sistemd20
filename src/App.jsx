@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import Marketplace from "./pages/Marketplace";
 import YourGames from "./pages/YourGames";
+import RequireAuth from "./components/RequireAuth"; // ✅ importa il wrapper
 
 function App() {
   return (
@@ -16,9 +17,32 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/marketplace" element={<Marketplace />} />
-        <Route path="/your-games" element={<YourGames />} />
+
+        {/* ✅ Route protette */}
+        <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <Profile />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/marketplace"
+          element={
+            <RequireAuth>
+              <Marketplace />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/your-games"
+          element={
+            <RequireAuth>
+              <YourGames />
+            </RequireAuth>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
