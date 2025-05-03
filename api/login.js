@@ -25,15 +25,16 @@ module.exports = async function handler(req, res) {
       return res.status(401).json({ message: "Password errata" });
     }
 
-    // ✅ Invio solo i dati utili al client (senza password)
+    // ✅ Assicurati che venga incluso anche il role
     return res.status(200).json({
       message: "Login effettuato",
       user: {
+        id: user._id,
+        email: user.email,
         nickname: user.nickname,
         avatar: user.avatar,
-        email: user.email,
-        id: user._id,
-      }
+        role: user.role || "player", // default se non esiste
+      },
     });
 
   } catch (err) {
