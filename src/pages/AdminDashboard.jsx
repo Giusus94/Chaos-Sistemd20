@@ -48,9 +48,9 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div>
-      <h2>Admin Dashboard</h2>
-      <table border="1">
+    <div style={{ padding: "2rem", color: "white" }}>
+      <h2>👑 Admin Dashboard</h2>
+      <table border="1" style={{ width: "100%", background: "#2c2c2c", color: "white" }}>
         <thead>
           <tr>
             <th>Email</th>
@@ -64,10 +64,10 @@ export default function AdminDashboard() {
             <tr key={u._id}>
               <td>{u.email}</td>
               <td>{u.nickname}</td>
-              <td>{u.role}</td>
+              <td>{u.role || "player"}</td>
               <td>
                 <select
-                  value={u.role}
+                  value={u.role || "player"}
                   onChange={(e) => updateRole(u._id, e.target.value)}
                 >
                   <option value="player">player</option>
