@@ -1,6 +1,5 @@
 const { connectToDatabase } = require("../lib/mongodb");
-const bcryptjs = require("bcryptjs");
-
+const bcrypt = require("bcrypt");
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Metodo non consentito" });
@@ -20,7 +19,7 @@ module.exports = async function handler(req, res) {
       return res.status(404).json({ message: "Utente non trovato" });
     }
 
-    const passwordMatch = await bcryptjs.compare(password, user.password);
+    const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       return res.status(401).json({ message: "Password errata" });
     }

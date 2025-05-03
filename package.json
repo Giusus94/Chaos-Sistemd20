@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "bcryptjs": "^2.4.3",
+    "bcrypt": "^5.1.1",
     "mongodb": "^6.16.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
