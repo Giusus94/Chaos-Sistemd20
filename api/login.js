@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
       return res.status(404).json({ message: "Utente non trovato" });
     }
 
-    const bcrypt = require("bcrypt");
+    const bcrypt = require("bcryptjs");
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
@@ -42,3 +42,4 @@ module.exports = async function handler(req, res) {
     console.error("🔥 [ERRORE LOGIN]:", err.message);
     return res.status(500).json({ message: "Errore del server", error: err.message });
   }
+};
