@@ -1,5 +1,5 @@
 const { connectToDatabase } = require("../lib/mongodb");
-const bcryptjs = require("bcryptjs"); // <--- IMPORTA bcryptjs
+const bcryptjs = require("bcryptjs"); // CORRETTO
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -20,12 +20,11 @@ module.exports = async function handler(req, res) {
       return res.status(409).json({ message: "Email già registrata" });
     }
 
-    // 🔐 Cifra la password PRIMA di salvarla
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcryptjs.hash(password, 10); // CORRETTO
 
     const result = await db.collection("users").insertOne({
       email,
-      password: hashedPassword, // <--- salva la password cifrata
+      password: hashedPassword,
       nickname,
       avatar,
       createdAt: new Date()
@@ -38,3 +37,4 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ message: "Errore del server", error: err.message });
   }
 };
+
