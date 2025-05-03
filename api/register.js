@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
     }
 
     // 🔐 Cifra la password PRIMA di salvarla
-    const hashedPassword = await bcryptjs.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await db.collection("users").insertOne({
       email,
