@@ -8,7 +8,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || user.role !== "admin") {
-      navigate("/login"); // blocca accesso se non admin
+      navigate("/login");
       return;
     }
 
@@ -22,6 +22,31 @@ export default function AdminDashboard() {
       .catch((err) => console.error("Errore:", err));
   }, [navigate]);
 
+  const updateRole = async (userId, newRole) => {
+    const currentUser = JSON.parse(localStorage.getItem("user"));
+    const res = await fetch("/api/users", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-role": currentUser.role
+      },
+      body: JSON.stringify({ userId, newRole })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert("Ruolo aggiornato!");
+      // 🔄 refresh utenti
+      const refreshed = await fetch("/api/users", {
+        headers: { "x-user-role": currentUser.role }
+      });
+      const newData = await refreshed.json();
+      setUsers(newData.users || []);
+    } else {
+      alert(data.message || "Errore durante l'aggiornamento");
+    }
+  };
+
   return (
     <div>
       <h2>Admin Dashboard</h2>
@@ -31,6 +56,7 @@ export default function AdminDashboard() {
             <th>Email</th>
             <th>Nickname</th>
             <th>Ruolo</th>
+            <th>Azioni</th>
           </tr>
         </thead>
         <tbody>
@@ -39,6 +65,16 @@ export default function AdminDashboard() {
               <td>{u.email}</td>
               <td>{u.nickname}</td>
               <td>{u.role}</td>
+              <td>
+                <select
+                  value={u.role}
+                  onChange={(e) => updateRole(u._id, e.target.value)}
+                >
+                  <option value="player">player</option>
+                  <option value="mod">mod</option>
+                  <option value="admin">admin</option>
+                </select>
+              </td>
             </tr>
           ))}
         </tbody>
