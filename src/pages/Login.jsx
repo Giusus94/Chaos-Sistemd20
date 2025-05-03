@@ -1,59 +1,49 @@
-import React, { useState } from "react";
+// ✅ Login.jsx
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Login = () => {
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
 
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+    const data = await res.json();
 
-      const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("nickname", data.nickname);
-        localStorage.setItem("avatar", data.avatar);
-        alert("Login riuscito!");
-        navigate("/profile");
-      } else {
-        alert(data.message || "Errore di login.");
-      }
-    } catch (err) {
-      alert("Errore di rete.");
+    if (res.ok) {
+      localStorage.setItem("user", JSON.stringify(data.user));
+      navigate("/profile");
+    } else {
+      alert(data.message || "Errore nel login");
     }
   };
 
   return (
-    <div className="container">
+    <form onSubmit={handleLogin}>
       <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          required
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          required
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Accedi</button>
-      </form>
-    </div>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+        placeholder="Email"
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+        placeholder="Password"
+      />
+      <button type="submit">Accedi</button>
+    </form>
   );
-};
-
-export default Login;
+}

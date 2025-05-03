@@ -1,37 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
-const Profile = () => {
-  const [nickname, setNickname] = useState("");
-  const [avatar, setAvatar] = useState("");
-  const navigate = useNavigate();
+// ✅ Profile.jsx
+import { useEffect, useState } from "react";
+
+export default function Profile() {
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const nick = localStorage.getItem("nickname");
-    const ava = localStorage.getItem("avatar");
-
-    if (!token) {
-      navigate("/login");
-    } else {
-      setNickname(nick);
-      setAvatar(ava);
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
     }
-  }, [navigate]);
+  }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
+  if (!user) return <p>Caricamento...</p>;
 
   return (
-    <div className="container">
-      <h2>Benvenuto, {nickname}</h2>
-      {avatar && <img src={avatar} alt="Avatar" style={{ width: 100, borderRadius: "50%" }} />}
-      <p>Hai effettuato l'accesso con successo.</p>
-      <button onClick={handleLogout}>Logout</button>
+    <div>
+      <h2>Benvenuto, {user.nickname || "-"}</h2>
+      <img src={user.avatar} alt="Avatar" width={100} height={100} />
+      <p>Email: {user.email}</p>
     </div>
   );
-};
-
-export default Profile;
+}

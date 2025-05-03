@@ -25,6 +25,7 @@ module.exports = async function handler(req, res) {
       return res.status(401).json({ message: "Password errata" });
     }
 
+    // ✅ Invio solo i dati utili al client (senza password)
     return res.status(200).json({
       message: "Login effettuato",
       user: {
