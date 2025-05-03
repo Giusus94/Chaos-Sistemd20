@@ -1,5 +1,6 @@
 const { connectToDatabase } = require("../lib/mongodb");
 const bcrypt = require("bcrypt");
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Metodo non consentito" });
@@ -19,23 +20,27 @@ module.exports = async function handler(req, res) {
       return res.status(404).json({ message: "Utente non trovato" });
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
+    if (!user.password) {
+      return res.status(500).json({ message: "Password non trovata nel database" });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
       return res.status(401).json({ message: "Password errata" });
     }
 
     return res.status(200).json({
       message: "Login effettuato",
       user: {
-        id: user._id,
-        email: user.email,
         nickname: user.nickname,
         avatar: user.avatar,
-        createdAt: user.createdAt,
+        email: user.email,
+        id: user._id,
       },
     });
-  } catch (error) {
-    console.error("Errore durante il login:", error);
-    return res.status(500).json({ message: "Errore del server", error: error.message });
+
+  } catch (err) {
+    console.error("Errore durante il login:", err);
+    return res.status(500).json({ message: "Errore del server", error: err.message });
   }
 };
