@@ -9,13 +9,13 @@ import Marketplace from "./pages/Marketplace";
 import YourGames from "./pages/YourGames";
 import RequireAuth from "./components/RequireAuth";
 import AdminDashboard from "./pages/AdminDashboard";
+import Lobbies from "./pages/Lobbies";
+import LobbyDetail from "./pages/LobbyDetail";
 
 function App() {
   return (
     <BrowserRouter>
-      {/* ✅ Navbar sempre visibile */}
       <Navbar />
-
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
@@ -51,6 +51,22 @@ function App() {
           element={
             <RequireAuth>
               <AdminDashboard />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/lobbies"
+          element={
+            <RequireAuth>
+              <Lobbies />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/lobby/:id"
+          element={
+            <RequireAuth>
+              <LobbyDetail />
             </RequireAuth>
           }
         />
