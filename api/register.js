@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
       return res.status(409).json({ message: "Email già registrata" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10); // CORRETTO
+    const hashedPassword = await bcryptjs.hash(password, 10); // CORRETTO
 
     const result = await db.collection("users").insertOne({
       email,
