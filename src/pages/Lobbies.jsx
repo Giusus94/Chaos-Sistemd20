@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 const Lobbies = () => {
   const [lobbies, setLobbies] = useState([]);
+  const [asMaster, setAsMaster] = useState(true);
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -18,6 +19,7 @@ const Lobbies = () => {
     const name = prompt("Nome della nuova lobby:");
     if (!name) return;
     const description = prompt("Descrizione:") || "";
+    const maxPlayers = parseInt(prompt("Numero massimo giocatori:"), 10) || 4;
 
     const res = await fetch("/api/lobbies", {
       method: "POST",
@@ -25,10 +27,11 @@ const Lobbies = () => {
       body: JSON.stringify({
         name,
         description,
-        master: {
-          id: user.id,
-          nickname: user.nickname,
-        },
+        maxPlayers,
+        master: asMaster ? { id: user.id, nickname: user.nickname } : null,
+        players: asMaster ? [] : [
+          { id: user.id, nickname: user.nickname, avatar: user.avatar }
+        ]
       }),
     });
 
@@ -58,11 +61,23 @@ const Lobbies = () => {
   return (
     <div style={{ padding: "2rem", color: "white" }}>
       <h2>Lobby disponibili</h2>
+      <label style={{ marginBottom: "1rem", display: "inline-block" }}>
+        <input
+          type="checkbox"
+          checked={asMaster}
+          onChange={() => setAsMaster(!asMaster)}
+        />
+        Crea come Master
+      </label>
+      <p style={{ color: "gray" }}>
+        Ruolo selezionato: <strong>{asMaster ? "🧙 Master" : "🎲 Giocatore"}</strong>
+      </p>
       <button onClick={handleCreateLobby}>Crea nuova lobby</button>
       <ul style={{ listStyle: "none", padding: 0 }}>
         {lobbies.map((lobby) => (
           <li key={lobby._id} style={{ marginBottom: "1rem" }}>
             <strong>{lobby.name}</strong> – {lobby.description} <br />
+            Master: {lobby.master ? lobby.master.nickname : "—"} <br />
             Giocatori: {lobby.players.length} / {lobby.maxPlayers} <br />
             <button onClick={() => handleJoin(lobby._id)}>Unisciti</button>
           </li>

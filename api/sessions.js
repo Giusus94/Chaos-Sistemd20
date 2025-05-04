@@ -107,6 +107,9 @@ const LobbyDetail = () => {
           Esci dalla lobby
         </button>
       )}
+
+
+      
     </div>
   );
 };
