@@ -1,68 +1,28 @@
-// ✅ /api/lobbies.js
-import { connectToDatabase } from "../../lib/mongodb";
-import { ObjectId } from "mongodb";
+import { MongoClient } from "mongodb";
 
-export default async function handler(req, res) {
-  const { db } = await connectToDatabase();
+const uri = process.env.MONGO_URI;
+const options = {};
 
-  switch (req.method) {
-    case "GET": {
-      const lobbies = await db.collection("lobbies").find().toArray();
-      return res.status(200).json({ lobbies });
-    }
+let client;
+let clientPromise;
 
-    case "POST": {
-      const { name, description, master } = req.body;
-      if (!name || !master?.id || !master?.nickname) {
-        return res.status(400).json({ message: "Dati mancanti" });
-      }
+if (!uri) throw new Error("MONGO_URI non definito");
 
-      const lobby = {
-        name,
-        description,
-        master,
-        players: [master],
-        maxPlayers: 6,
-        createdAt: new Date(),
-      };
-
-      const result = await db.collection("lobbies").insertOne(lobby);
-      return res.status(201).json({ lobbyId: result.insertedId });
-    }
-
-    case "PATCH": {
-      const { lobbyId, player } = req.body;
-      if (!lobbyId || !player?.id || !player?.nickname) {
-        return res.status(400).json({ message: "Dati mancanti" });
-      }
-
-      const lobby = await db.collection("lobbies").findOne({ _id: new ObjectId(lobbyId) });
-      if (!lobby) return res.status(404).json({ message: "Lobby non trovata" });
-
-      const alreadyJoined = lobby.players.some(p => p.id === player.id);
-      if (alreadyJoined) return res.status(200).json({ message: "Già unito" });
-
-      if (lobby.players.length >= lobby.maxPlayers) {
-        return res.status(403).json({ message: "Lobby piena" });
-      }
-
-      await db.collection("lobbies").updateOne(
-        { _id: new ObjectId(lobbyId) },
-        { $push: { players: player } }
-      );
-
-      return res.status(200).json({ message: "Unito con successo" });
-    }
-
-    case "DELETE": {
-      const { lobbyId } = req.body;
-      if (!lobbyId) return res.status(400).json({ message: "ID mancante" });
-
-      await db.collection("lobbies").deleteOne({ _id: new ObjectId(lobbyId) });
-      return res.status(200).json({ message: "Lobby eliminata" });
-    }
-
-    default:
-      return res.status(405).json({ message: "Metodo non consentito" });
+if (process.env.NODE_ENV === "development") {
+  if (!global._mongoClientPromise) {
+    client = new MongoClient(uri, options);
+    global._mongoClientPromise = client.connect();
   }
+  clientPromise = global._mongoClientPromise;
+} else {
+  client = new MongoClient(uri, options);
+  clientPromise = client.connect();
 }
+
+async function connectToDatabase() {
+  const client = await clientPromise;
+  const db = client.db("chaossystem");
+  return { client, db };
+}
+
+export { connectToDatabase };

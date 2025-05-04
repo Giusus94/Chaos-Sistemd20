@@ -1,5 +1,6 @@
 // ✅ api/sessions.js
-import { connectToDatabase } from "../lib/mongodb";
+import { connectToDatabase } from "../lib/mongodb.js";
+import { ObjectId } from "mongodb";
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -34,7 +35,7 @@ export default async function handler(req, res) {
       }
 
       await db.collection("sessions").updateOne(
-        { _id: new (require("mongodb").ObjectId)(sessionId) },
+        { _id: new ObjectId(sessionId) },
         { $push: { log: { ...logEntry, timestamp: new Date() } } }
       );
 
