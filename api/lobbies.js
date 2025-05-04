@@ -1,114 +1,68 @@
-// ✅ src/pages/LobbyDetail.jsx
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+// ✅ /api/lobbies.js
+import { connectToDatabase } from "../../lib/mongodb";
+import { ObjectId } from "mongodb";
 
-const LobbyDetail = () => {
-  const { id } = useParams();
-  const [lobby, setLobby] = useState(null);
-  const [sessionId, setSessionId] = useState(null);
-  const [logInput, setLogInput] = useState("");
-  const user = JSON.parse(localStorage.getItem("user"));
-  const navigate = useNavigate();
+export default async function handler(req, res) {
+  const { db } = await connectToDatabase();
 
-  useEffect(() => {
-    fetch("/api/lobbies")
-      .then(res => res.json())
-      .then(data => {
-        const found = data.lobbies.find((l) => l._id === id);
-        if (found) setLobby(found);
-        else navigate("/lobbies");
-      });
-  }, [id, navigate]);
+  switch (req.method) {
+    case "GET": {
+      const lobbies = await db.collection("lobbies").find().toArray();
+      return res.status(200).json({ lobbies });
+    }
 
-  const handleClose = async () => {
-    if (!window.confirm("Vuoi davvero chiudere questa lobby?")) return;
-    const res = await fetch("/api/lobbies", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lobbyId: id }),
-    });
-    if (res.ok) navigate("/lobbies");
-    else alert("Errore nella chiusura della lobby");
-  };
+    case "POST": {
+      const { name, description, master } = req.body;
+      if (!name || !master?.id || !master?.nickname) {
+        return res.status(400).json({ message: "Dati mancanti" });
+      }
 
-  const startSession = async () => {
-    const res = await fetch("/api/sessions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        lobbyId: id,
-        startedBy: { id: user.id, nickname: user.nickname },
-        players: lobby.players,
-      }),
-    });
-    const data = await res.json();
-    if (res.ok) setSessionId(data.sessionId);
-    else alert(data.message || "Errore avvio sessione");
-  };
+      const lobby = {
+        name,
+        description,
+        master,
+        players: [master],
+        maxPlayers: 6,
+        createdAt: new Date(),
+      };
 
-  const addLogEntry = async () => {
-    if (!logInput || !sessionId) return;
-    const res = await fetch("/api/sessions", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId,
-        logEntry: {
-          type: "note",
-          content: logInput,
-        },
-      }),
-    });
-    if (res.ok) setLogInput("");
-  };
+      const result = await db.collection("lobbies").insertOne(lobby);
+      return res.status(201).json({ lobbyId: result.insertedId });
+    }
 
-  if (!lobby) return <p style={{ color: "white" }}>Caricamento...</p>;
-  const isMaster = user.id === lobby.master.id;
+    case "PATCH": {
+      const { lobbyId, player } = req.body;
+      if (!lobbyId || !player?.id || !player?.nickname) {
+        return res.status(400).json({ message: "Dati mancanti" });
+      }
 
-  return (
-    <div style={{ padding: "2rem", color: "white" }}>
-      <h2>{lobby.name}</h2>
-      <p>{lobby.description}</p>
-      <p>Master: {lobby.master.nickname}</p>
-      <p>Giocatori ({lobby.players.length}/{lobby.maxPlayers}):</p>
-      <ul>
-        {lobby.players.map((p) => (
-          <li key={p.id}>{p.nickname}</li>
-        ))}
-      </ul>
+      const lobby = await db.collection("lobbies").findOne({ _id: new ObjectId(lobbyId) });
+      if (!lobby) return res.status(404).json({ message: "Lobby non trovata" });
 
-      {isMaster && (
-        <>
-          <button onClick={handleClose}>Chiudi Lobby</button>
-          <button onClick={startSession} style={{ marginLeft: "1rem" }}>
-            {sessionId ? "Sessione Attiva" : "Avvia Sessione"}
-          </button>
-        </>
-      )}
+      const alreadyJoined = lobby.players.some(p => p.id === player.id);
+      if (alreadyJoined) return res.status(200).json({ message: "Già unito" });
 
-      {sessionId && (
-        <div style={{ marginTop: "2rem" }}>
-          <h3>📖 Log Sessione</h3>
-          <textarea
-            rows="3"
-            placeholder="Annota evento, decisione, esito..."
-            value={logInput}
-            onChange={(e) => setLogInput(e.target.value)}
-            style={{ width: "100%", padding: "0.5rem" }}
-          ></textarea>
-          <button onClick={addLogEntry} style={{ marginTop: "0.5rem" }}>
-            Aggiungi al log
-          </button>
-        </div>
-      )}
+      if (lobby.players.length >= lobby.maxPlayers) {
+        return res.status(403).json({ message: "Lobby piena" });
+      }
 
-      {!isMaster && (
-        <button onClick={() => navigate("/lobbies")} style={{ marginTop: "1rem" }}>
-          Esci dalla lobby
-        </button>
-      )}
-    </div>
-  );
-};
+      await db.collection("lobbies").updateOne(
+        { _id: new ObjectId(lobbyId) },
+        { $push: { players: player } }
+      );
 
-export default LobbyDetail;
+      return res.status(200).json({ message: "Unito con successo" });
+    }
+
+    case "DELETE": {
+      const { lobbyId } = req.body;
+      if (!lobbyId) return res.status(400).json({ message: "ID mancante" });
+
+      await db.collection("lobbies").deleteOne({ _id: new ObjectId(lobbyId) });
+      return res.status(200).json({ message: "Lobby eliminata" });
+    }
+
+    default:
+      return res.status(405).json({ message: "Metodo non consentito" });
+  }
+}
