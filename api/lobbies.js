@@ -1,8 +1,8 @@
 // ✅ /api/lobbies.js (stabile e funzionante)
-import { connectToDatabase } from "../../lib/mongodb";
-import { ObjectId } from "mongodb";
+const { connectToDatabase } = require("../../lib/mongodb");
+const { ObjectId } = require("mongodb");
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const { db } = await connectToDatabase();
 
   switch (req.method) {
@@ -12,17 +12,19 @@ export default async function handler(req, res) {
     }
 
     case "POST": {
-      const { name, description, master } = req.body;
-      if (!name || !master?.id || !master?.nickname) {
-        return res.status(400).json({ message: "Dati mancanti" });
+      const { name, description, type, maxPlayers, master, players } = req.body;
+
+      if (!name || !maxPlayers) {
+        return res.status(400).json({ message: "Dati obbligatori mancanti" });
       }
 
       const lobby = {
         name,
-        description,
-        master,
-        players: [master],
-        maxPlayers: 6,
+        description: description || "",
+        type: type || "Generico",
+        maxPlayers,
+        master: master || null,
+        players: players || [],
         createdAt: new Date(),
       };
 
@@ -32,8 +34,9 @@ export default async function handler(req, res) {
 
     case "PATCH": {
       const { lobbyId, player } = req.body;
+
       if (!lobbyId || !player?.id || !player?.nickname) {
-        return res.status(400).json({ message: "Dati mancanti" });
+        return res.status(400).json({ message: "Dati per l'unione mancanti" });
       }
 
       const lobby = await db.collection("lobbies").findOne({ _id: new ObjectId(lobbyId) });
@@ -65,5 +68,4 @@ export default async function handler(req, res) {
     default:
       return res.status(405).json({ message: "Metodo non consentito" });
   }
-}
-
+};
