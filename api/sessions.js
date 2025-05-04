@@ -1,5 +1,5 @@
-// ✅ api/sessions.js
-import { connectToDatabase } from "../lib/mongodb.js";
+// ✅ /api/sessions.js
+import { connectToDatabase } from "../../lib/mongodb";
 import { ObjectId } from "mongodb";
 
 export default async function handler(req, res) {
@@ -8,7 +8,6 @@ export default async function handler(req, res) {
   try {
     const { db } = await connectToDatabase();
 
-    // 👉 Crea una nuova sessione
     if (method === "POST") {
       const { lobbyId, startedBy, players } = req.body;
       if (!lobbyId || !startedBy || !players) {
@@ -27,7 +26,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ sessionId: result.insertedId });
     }
 
-    // 👉 Aggiungi log a una sessione esistente
     if (method === "PATCH") {
       const { sessionId, logEntry } = req.body;
       if (!sessionId || !logEntry) {
@@ -42,7 +40,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ message: "Log aggiunto" });
     }
 
-    // ❌ Metodo non consentito
     return res.status(405).json({ message: "Metodo non supportato" });
   } catch (error) {
     console.error("Errore nella sessione:", error);
