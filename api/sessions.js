@@ -1,5 +1,5 @@
 // ✅ /api/sessions.js (CommonJS compatibile)
-const { connectToDatabase } = require("../../lib/mongodb");
+const { connectToDatabase } = require("../lib/mongodb");
 const { ObjectId } = require("mongodb");
 
 module.exports = async function handler(req, res) {
