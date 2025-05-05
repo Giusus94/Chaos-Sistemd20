@@ -1,4 +1,3 @@
-// ✅ api/lobbies.js
 const { connectToDatabase } = require("../lib/mongodb");
 const { ObjectId } = require("mongodb");
 
@@ -14,28 +13,29 @@ module.exports = async function handler(req, res) {
     case "POST": {
       const { name, description, type, maxPlayers, master, players } = req.body;
 
-      if (!name || !maxPlayers || (!master && (!players || players.length === 0))) {
+      if (!name || !description || !type || !maxPlayers) {
         return res.status(400).json({ message: "Dati mancanti" });
       }
 
-      const lobby = {
+      const newLobby = {
         name,
-        description: description || "",
-        type: type || "Generico",
+        description,
+        type,
+        maxPlayers,
         master: master || null,
         players: players || [],
-        maxPlayers,
         createdAt: new Date(),
       };
 
-      const result = await db.collection("lobbies").insertOne(lobby);
+      const result = await db.collection("lobbies").insertOne(newLobby);
       return res.status(201).json({ lobbyId: result.insertedId });
     }
 
     case "PATCH": {
       const { lobbyId, player } = req.body;
+
       if (!lobbyId || !player?.id || !player?.nickname) {
-        return res.status(400).json({ message: "Dati mancanti" });
+        return res.status(400).json({ message: "Dati mancanti per l'unione" });
       }
 
       const lobby = await db.collection("lobbies").findOne({ _id: new ObjectId(lobbyId) });
@@ -58,7 +58,7 @@ module.exports = async function handler(req, res) {
 
     case "DELETE": {
       const { lobbyId } = req.body;
-      if (!lobbyId) return res.status(400).json({ message: "ID mancante" });
+      if (!lobbyId) return res.status(400).json({ message: "ID lobby mancante" });
 
       await db.collection("lobbies").deleteOne({ _id: new ObjectId(lobbyId) });
       return res.status(200).json({ message: "Lobby eliminata" });
