@@ -1,8 +1,8 @@
-// ✅ /api/sessions.js
-import { connectToDatabase } from "../../lib/mongodb";
-import { ObjectId } from "mongodb";
+// ✅ /api/sessions.js (CommonJS compatibile)
+const { connectToDatabase } = require("../../lib/mongodb");
+const { ObjectId } = require("mongodb");
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const { method } = req;
 
   try {
@@ -45,4 +45,4 @@ export default async function handler(req, res) {
     console.error("Errore nella sessione:", error);
     return res.status(500).json({ message: "Errore del server" });
   }
-}
+};
