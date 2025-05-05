@@ -1,5 +1,5 @@
-// ✅ /api/sessions.js (CommonJS compatibile)
-const { connectToDatabase } = require("../lib/mongodb");
+// ✅ /api/sessions.js
+const { connectToDatabase } = require("../../lib/mongodb");
 const { ObjectId } = require("mongodb");
 
 module.exports = async function handler(req, res) {
@@ -7,6 +7,11 @@ module.exports = async function handler(req, res) {
 
   try {
     const { db } = await connectToDatabase();
+
+    if (method === "GET") {
+      const sessions = await db.collection("sessions").find().toArray();
+      return res.status(200).json({ sessions });
+    }
 
     if (method === "POST") {
       const { lobbyId, startedBy, players } = req.body;

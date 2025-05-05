@@ -1,4 +1,3 @@
-// ✅ /api/lobbies.js
 const { connectToDatabase } = require("../lib/mongodb");
 const { ObjectId } = require("mongodb");
 
@@ -14,7 +13,7 @@ module.exports = async function handler(req, res) {
     case "POST": {
       const { name, description, type, maxPlayers, master, players } = req.body;
 
-      // ✅ Validazione migliorata
+      // 🔍 Validazione migliorata dei campi
       if (
         typeof name !== "string" ||
         typeof description !== "string" ||
@@ -31,7 +30,7 @@ module.exports = async function handler(req, res) {
         type,
         maxPlayers,
         master: master || null,
-        players: players || [],
+        players: Array.isArray(players) ? players : [],
         createdAt: new Date(),
       };
 
