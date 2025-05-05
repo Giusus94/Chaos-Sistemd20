@@ -5,23 +5,22 @@ import { useNavigate } from "react-router-dom";
 const Lobbies = () => {
   const [lobbies, setLobbies] = useState([]);
   const [asMaster, setAsMaster] = useState(true);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [type, setType] = useState("Avventura");
-  const [maxPlayers, setMaxPlayers] = useState(4);
-
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     fetch("/api/lobbies")
-      .then((res) => res.json())
-      .then((data) => setLobbies(data.lobbies))
-      .catch((err) => console.error("Errore nel caricamento lobbies:", err));
+      .then(res => res.json())
+      .then(data => setLobbies(data.lobbies))
+      .catch(err => console.error("Errore nel caricamento lobbies:", err));
   }, []);
 
   const handleCreateLobby = async () => {
-    if (!name) return alert("Inserisci un nome per la campagna!");
+    const name = prompt("Nome della nuova lobby:");
+    if (!name) return;
+    const description = prompt("Descrizione:") || "";
+    const type = prompt("Tipologia campagna:") || "Generico";
+    const maxPlayers = parseInt(prompt("Numero massimo giocatori:"), 10) || 4;
 
     const res = await fetch("/api/lobbies", {
       method: "POST",
@@ -32,9 +31,9 @@ const Lobbies = () => {
         type,
         maxPlayers,
         master: asMaster ? { id: user.id, nickname: user.nickname } : null,
-        players: asMaster
-          ? []
-          : [{ id: user.id, nickname: user.nickname, avatar: user.avatar }],
+        players: asMaster ? [] : [
+          { id: user.id, nickname: user.nickname, avatar: user.avatar }
+        ]
       }),
     });
 
@@ -56,7 +55,6 @@ const Lobbies = () => {
         },
       }),
     });
-
     const data = await res.json();
     if (res.ok) navigate(`/lobby/${lobbyId}`);
     else alert(data.message || "Errore nell'unione alla lobby");
@@ -64,60 +62,26 @@ const Lobbies = () => {
 
   return (
     <div style={{ padding: "2rem", color: "white" }}>
-      <h2>Crea nuova Lobby</h2>
-
-      <input
-        placeholder="Nome campagna"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <br />
-      <textarea
-        placeholder="Descrizione"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
-      <br />
-      <select value={type} onChange={(e) => setType(e.target.value)}>
-        <option value="Avventura">Avventura</option>
-        <option value="Horror">Horror</option>
-        <option value="Fantasy">Fantasy</option>
-        <option value="Sci-fi">Sci-fi</option>
-        <option value="Comico">Comico</option>
-      </select>
-      <br />
-      <input
-        type="number"
-        min="2"
-        max="20"
-        value={maxPlayers}
-        onChange={(e) => setMaxPlayers(parseInt(e.target.value))}
-      />
-      <label> Max giocatori</label>
-      <br />
-      <label>
+      <h2>Lobby disponibili</h2>
+      <label style={{ marginBottom: "1rem", display: "inline-block" }}>
         <input
           type="checkbox"
           checked={asMaster}
           onChange={() => setAsMaster(!asMaster)}
-        />{" "}
+        />
         Crea come Master
       </label>
-      <p>
-        Ruolo iniziale: <strong>{asMaster ? "🧙 Master" : "🎲 Giocatore"}</strong>
+      <p style={{ color: "gray" }}>
+        Ruolo selezionato: <strong>{asMaster ? "🧙 Master" : "🎲 Giocatore"}</strong>
       </p>
-
-      <button onClick={handleCreateLobby}>Crea</button>
-
-      <hr />
-
-      <h3>Lobbies disponibili</h3>
-      <ul>
+      <button onClick={handleCreateLobby}>Crea nuova lobby</button>
+      <ul style={{ listStyle: "none", padding: 0 }}>
         {lobbies.map((lobby) => (
-          <li key={lobby._id}>
-            <strong>{lobby.name}</strong> – {lobby.type || "Generico"} <br />
-            Master: {lobby.master?.nickname || "—"} <br />
-            Giocatori: {lobby.players.length}/{lobby.maxPlayers} <br />
+          <li key={lobby._id} style={{ marginBottom: "1rem" }}>
+            <strong>{lobby.name}</strong> – {lobby.description} <br />
+            Tipologia: {lobby.type || "N/A"}<br />
+            Master: {lobby.master ? lobby.master.nickname : "—"} <br />
+            Giocatori: {lobby.players.length} / {lobby.maxPlayers} <br />
             <button onClick={() => handleJoin(lobby._id)}>Unisciti</button>
           </li>
         ))}

@@ -14,7 +14,7 @@ module.exports = async function handler(req, res) {
     case "POST": {
       const { name, description, type, maxPlayers, master, players } = req.body;
 
-      if (!name || !maxPlayers) {
+      if (!name || !maxPlayers || (!master && (!players || players.length === 0))) {
         return res.status(400).json({ message: "Dati obbligatori mancanti" });
       }
 
@@ -22,9 +22,9 @@ module.exports = async function handler(req, res) {
         name,
         description: description || "",
         type: type || "Generico",
-        maxPlayers,
         master: master || null,
-        players: players || [],
+        players: master ? [master] : players,
+        maxPlayers: parseInt(maxPlayers),
         createdAt: new Date(),
       };
 
@@ -36,14 +36,14 @@ module.exports = async function handler(req, res) {
       const { lobbyId, player } = req.body;
 
       if (!lobbyId || !player?.id || !player?.nickname) {
-        return res.status(400).json({ message: "Dati per l'unione mancanti" });
+        return res.status(400).json({ message: "Dati mancanti" });
       }
 
       const lobby = await db.collection("lobbies").findOne({ _id: new ObjectId(lobbyId) });
       if (!lobby) return res.status(404).json({ message: "Lobby non trovata" });
 
       const alreadyJoined = lobby.players.some(p => p.id === player.id);
-      if (alreadyJoined) return res.status(200).json({ message: "Già unito" });
+      if (alreadyJoined) return res.status(200).json({ message: "Già presente nella lobby" });
 
       if (lobby.players.length >= lobby.maxPlayers) {
         return res.status(403).json({ message: "Lobby piena" });
@@ -59,13 +59,14 @@ module.exports = async function handler(req, res) {
 
     case "DELETE": {
       const { lobbyId } = req.body;
-      if (!lobbyId) return res.status(400).json({ message: "ID mancante" });
+
+      if (!lobbyId) return res.status(400).json({ message: "ID lobby mancante" });
 
       await db.collection("lobbies").deleteOne({ _id: new ObjectId(lobbyId) });
-      return res.status(200).json({ message: "Lobby eliminata" });
+      return res.status(200).json({ message: "Lobby eliminata con successo" });
     }
 
     default:
-      return res.status(405).json({ message: "Metodo non consentito" });
+      return res.status(405).json({ message: "Metodo non supportato" });
   }
 };
