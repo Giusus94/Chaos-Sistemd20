@@ -1,5 +1,5 @@
-// ✅ /api/lobbies.js (stabile e funzionante)
-const { connectToDatabase } = require("../../lib/mongodb");
+// ✅ api/lobbies.js
+const { connectToDatabase } = require("../lib/mongodb");
 const { ObjectId } = require("mongodb");
 
 module.exports = async function handler(req, res) {
@@ -15,7 +15,7 @@ module.exports = async function handler(req, res) {
       const { name, description, type, maxPlayers, master, players } = req.body;
 
       if (!name || !maxPlayers || (!master && (!players || players.length === 0))) {
-        return res.status(400).json({ message: "Dati obbligatori mancanti" });
+        return res.status(400).json({ message: "Dati mancanti" });
       }
 
       const lobby = {
@@ -23,8 +23,8 @@ module.exports = async function handler(req, res) {
         description: description || "",
         type: type || "Generico",
         master: master || null,
-        players: master ? [master] : players,
-        maxPlayers: parseInt(maxPlayers),
+        players: players || [],
+        maxPlayers,
         createdAt: new Date(),
       };
 
@@ -34,7 +34,6 @@ module.exports = async function handler(req, res) {
 
     case "PATCH": {
       const { lobbyId, player } = req.body;
-
       if (!lobbyId || !player?.id || !player?.nickname) {
         return res.status(400).json({ message: "Dati mancanti" });
       }
@@ -43,7 +42,7 @@ module.exports = async function handler(req, res) {
       if (!lobby) return res.status(404).json({ message: "Lobby non trovata" });
 
       const alreadyJoined = lobby.players.some(p => p.id === player.id);
-      if (alreadyJoined) return res.status(200).json({ message: "Già presente nella lobby" });
+      if (alreadyJoined) return res.status(200).json({ message: "Già unito" });
 
       if (lobby.players.length >= lobby.maxPlayers) {
         return res.status(403).json({ message: "Lobby piena" });
@@ -59,14 +58,13 @@ module.exports = async function handler(req, res) {
 
     case "DELETE": {
       const { lobbyId } = req.body;
-
-      if (!lobbyId) return res.status(400).json({ message: "ID lobby mancante" });
+      if (!lobbyId) return res.status(400).json({ message: "ID mancante" });
 
       await db.collection("lobbies").deleteOne({ _id: new ObjectId(lobbyId) });
-      return res.status(200).json({ message: "Lobby eliminata con successo" });
+      return res.status(200).json({ message: "Lobby eliminata" });
     }
 
     default:
-      return res.status(405).json({ message: "Metodo non supportato" });
+      return res.status(405).json({ message: "Metodo non consentito" });
   }
 };
