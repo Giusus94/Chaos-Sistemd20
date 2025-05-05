@@ -1,3 +1,4 @@
+// ✅ /api/lobbies.js
 const { connectToDatabase } = require("../lib/mongodb");
 const { ObjectId } = require("mongodb");
 
@@ -13,8 +14,15 @@ module.exports = async function handler(req, res) {
     case "POST": {
       const { name, description, type, maxPlayers, master, players } = req.body;
 
-      if (!name || !description || !type || !maxPlayers) {
-        return res.status(400).json({ message: "Dati mancanti" });
+      // ✅ Validazione migliorata
+      if (
+        typeof name !== "string" ||
+        typeof description !== "string" ||
+        typeof type !== "string" ||
+        typeof maxPlayers !== "number" ||
+        maxPlayers < 1
+      ) {
+        return res.status(400).json({ message: "Dati invalidi o mancanti" });
       }
 
       const newLobby = {
