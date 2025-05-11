@@ -5,32 +5,29 @@ import { useNavigate } from "react-router-dom";
 export default function CreateCampaign() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
-  const [form, setForm] = useState({
+  const [formData, setFormData] = useState({
     title: "",
     description: "",
-    type: "",
-    imageUrl: "",
+    type: "Generico",
     maxPlayers: 4,
+    image: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const res = await fetch("/api/lobbies", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: form.title,
-        description: form.description,
-        type: form.type,
-        imageUrl: form.imageUrl,
-        maxPlayers: parseInt(form.maxPlayers, 10),
+        ...formData,
         master: { id: user.id, nickname: user.nickname },
-        players: [],
+        players: [{ id: user.id, nickname: user.nickname, avatar: user.avatar }],
       }),
     });
 
@@ -43,54 +40,55 @@ export default function CreateCampaign() {
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10 p-6 bg-[#1e1e1e] text-white rounded shadow">
-      <h2 className="text-2xl font-bold mb-6">📖 Crea Nuova Campagna</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="p-6 max-w-xl mx-auto text-white">
+      <h2 className="text-2xl font-bold mb-4">🛠️ Crea Nuova Campagna</h2>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="text"
           name="title"
           placeholder="Titolo della campagna"
-          className="w-full p-2 rounded bg-[#2c2c2c]"
-          value={form.title}
+          value={formData.title}
           onChange={handleChange}
           required
+          className="p-2 rounded bg-gray-800 text-white"
         />
         <textarea
           name="description"
           placeholder="Descrizione"
-          className="w-full p-2 rounded bg-[#2c2c2c]"
-          rows="4"
-          value={form.description}
+          value={formData.description}
           onChange={handleChange}
+          required
+          className="p-2 rounded bg-gray-800 text-white"
         ></textarea>
         <input
           type="text"
           name="type"
-          placeholder="Tipologia (es. Fantasy, Cyberpunk)"
-          className="w-full p-2 rounded bg-[#2c2c2c]"
-          value={form.type}
+          placeholder="Tipologia (es: Horror, Sci-Fi, Fantasy...)"
+          value={formData.type}
           onChange={handleChange}
-        />
-        <input
-          type="url"
-          name="imageUrl"
-          placeholder="URL immagine copertina"
-          className="w-full p-2 rounded bg-[#2c2c2c]"
-          value={form.imageUrl}
-          onChange={handleChange}
+          className="p-2 rounded bg-gray-800 text-white"
         />
         <input
           type="number"
           name="maxPlayers"
-          placeholder="Numero massimo giocatori"
-          className="w-full p-2 rounded bg-[#2c2c2c]"
-          value={form.maxPlayers}
+          placeholder="Numero massimo di giocatori"
+          value={formData.maxPlayers}
           onChange={handleChange}
           min={1}
+          max={20}
+          className="p-2 rounded bg-gray-800 text-white"
+        />
+        <input
+          type="url"
+          name="image"
+          placeholder="URL immagine della campagna (opzionale)"
+          value={formData.image}
+          onChange={handleChange}
+          className="p-2 rounded bg-gray-800 text-white"
         />
         <button
           type="submit"
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded"
+          className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
         >
           ➕ Crea Campagna
         </button>
