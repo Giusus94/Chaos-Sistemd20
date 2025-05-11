@@ -8,15 +8,10 @@ module.exports = async function handler(req, res) {
   try {
     const { db } = await connectToDatabase();
 
-    if (method === "GET") {
-      const sessions = await db.collection("sessions").find().toArray();
-      return res.status(200).json({ sessions });
-    }
-
     if (method === "POST") {
       const { lobbyId, startedBy, players } = req.body;
-      if (!lobbyId || !startedBy || !players) {
-        return res.status(400).json({ message: "Dati mancanti" });
+      if (!lobbyId || !startedBy || !players || !Array.isArray(players)) {
+        return res.status(400).json({ message: "Dati mancanti o errati" });
       }
 
       const session = {
@@ -33,7 +28,7 @@ module.exports = async function handler(req, res) {
 
     if (method === "PATCH") {
       const { sessionId, logEntry } = req.body;
-      if (!sessionId || !logEntry) {
+      if (!sessionId || !logEntry || typeof logEntry.content !== "string") {
         return res.status(400).json({ message: "Dati mancanti per il log" });
       }
 
