@@ -10,8 +10,8 @@ module.exports = async function handler(req, res) {
 
     if (method === "POST") {
       const { lobbyId, startedBy, players } = req.body;
-      if (!lobbyId || !startedBy || !players || !Array.isArray(players)) {
-        return res.status(400).json({ message: "Dati mancanti o errati" });
+      if (!lobbyId || !startedBy || !players) {
+        return res.status(400).json({ message: "Dati mancanti" });
       }
 
       const session = {
@@ -28,7 +28,7 @@ module.exports = async function handler(req, res) {
 
     if (method === "PATCH") {
       const { sessionId, logEntry } = req.body;
-      if (!sessionId || !logEntry || typeof logEntry.content !== "string") {
+      if (!sessionId || !logEntry) {
         return res.status(400).json({ message: "Dati mancanti per il log" });
       }
 
