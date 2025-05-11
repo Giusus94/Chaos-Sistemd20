@@ -25,7 +25,11 @@ module.exports = async function handler(req, res) {
       const result = await db.collection("sessions").insertOne(session);
       return res.status(200).json({ sessionId: result.insertedId });
     }
-
+    if (method === "GET") {
+      const sessions = await db.collection("sessions").find().toArray();
+      return res.status(200).json({ sessions });
+    }
+    
     if (method === "PATCH") {
       const { sessionId, logEntry } = req.body;
       if (!sessionId || !logEntry) {
