@@ -16,30 +16,40 @@ const Lobbies = () => {
   }, []);
 
   const handleCreateLobby = async () => {
-    const name = prompt("Nome della nuova lobby:");
+    const name = prompt("Nome della nuova campagna:");
     if (!name) return;
-    const description = prompt("Descrizione:") || "";
-    const type = prompt("Tipologia campagna:") || "Generico";
-    const maxPlayers = parseInt(prompt("Numero massimo giocatori:"), 10) || 4;
+    const description = prompt("Descrizione della campagna:") || "";
+    const type = prompt("Tipologia (es. Fantasy, Cyberpunk):") || "Generico";
+    const maxPlayers = parseInt(prompt("Numero massimo di giocatori:"), 10);
+
+    if (!name || !description || !type || !maxPlayers || maxPlayers < 1) {
+      alert("Dati inseriti non validi");
+      return;
+    }
+
+    const lobbyData = {
+      name,
+      description,
+      type,
+      maxPlayers,
+      master: asMaster ? { id: user.id, nickname: user.nickname } : null,
+      players: asMaster
+        ? []
+        : [{ id: user.id, nickname: user.nickname, avatar: user.avatar }],
+    };
 
     const res = await fetch("/api/lobbies", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name,
-        description,
-        type,
-        maxPlayers,
-        master: asMaster ? { id: user.id, nickname: user.nickname } : null,
-        players: asMaster ? [] : [
-          { id: user.id, nickname: user.nickname, avatar: user.avatar }
-        ]
-      }),
+      body: JSON.stringify(lobbyData),
     });
 
     const data = await res.json();
-    if (res.ok) navigate(`/lobby/${data.lobbyId}`);
-    else alert(data.message || "Errore nella creazione della lobby");
+    if (res.ok) {
+      navigate(`/lobby/${data.lobbyId}`);
+    } else {
+      alert(data.message || "Errore nella creazione della lobby");
+    }
   };
 
   const handleJoin = async (lobbyId) => {
@@ -55,6 +65,7 @@ const Lobbies = () => {
         },
       }),
     });
+
     const data = await res.json();
     if (res.ok) navigate(`/lobby/${lobbyId}`);
     else alert(data.message || "Errore nell'unione alla lobby");
@@ -63,6 +74,7 @@ const Lobbies = () => {
   return (
     <div style={{ padding: "2rem", color: "white" }}>
       <h2>Lobby disponibili</h2>
+
       <label style={{ marginBottom: "1rem", display: "inline-block" }}>
         <input
           type="checkbox"
@@ -74,12 +86,14 @@ const Lobbies = () => {
       <p style={{ color: "gray" }}>
         Ruolo selezionato: <strong>{asMaster ? "🧙 Master" : "🎲 Giocatore"}</strong>
       </p>
+
       <button onClick={handleCreateLobby}>Crea nuova lobby</button>
+
       <ul style={{ listStyle: "none", padding: 0 }}>
         {lobbies.map((lobby) => (
           <li key={lobby._id} style={{ marginBottom: "1rem" }}>
             <strong>{lobby.name}</strong> – {lobby.description} <br />
-            Tipologia: {lobby.type || "N/A"}<br />
+            Tipologia: {lobby.type || "N/A"} <br />
             Master: {lobby.master ? lobby.master.nickname : "—"} <br />
             Giocatori: {lobby.players.length} / {lobby.maxPlayers} <br />
             <button onClick={() => handleJoin(lobby._id)}>Unisciti</button>
