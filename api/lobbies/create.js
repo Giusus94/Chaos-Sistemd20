@@ -1,5 +1,5 @@
 // ✅ /api/lobbies/create.js
-import { connectToDatabase } from "../../lib/mongodb";
+import { connectToDatabase } from "../lib/mongodb";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

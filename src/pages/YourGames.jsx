@@ -25,24 +25,34 @@ export default function YourGames() {
   const handleCreateLobby = async () => {
     const title = prompt("Titolo della nuova lobby:");
     if (!title) return;
-
-    const res = await fetch("/api/lobbies/create", {
+  
+    const res = await fetch("/api/lobbies", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ title, creator: user.nickname, creatorId: user.id })
+      body: JSON.stringify({
+        name: title,
+        description: "Partita generica",
+        type: "Avventura",
+        maxPlayers: 4,
+        master: {
+          id: user.id,
+          nickname: user.nickname
+        },
+        players: []
+      })
     });
-
+  
     const data = await res.json();
     if (res.ok) {
       alert("Lobby creata!");
-      navigate(`/lobby/${data.lobby._id}`);
+      navigate(`/lobby/${data.lobbyId}`);
     } else {
       alert(data.message || "Errore nella creazione della lobby");
     }
   };
-
+  
   return (
     <div className="p-6 text-white">
       <h2 className="text-2xl font-bold mb-4">🎲 I Tuoi Giochi</h2>
